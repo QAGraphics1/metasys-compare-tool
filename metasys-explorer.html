@@ -1,0 +1,3605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metasys Mapper - Point Explorer</title>
+    <style>
+        :root {
+            /* BAS Professional Color Palette */
+            --primary-color: #0066cc;
+            --secondary-color: #2C3E50;
+            --accent-color: #3498DB;
+            --success-color: #27AE60;
+            --warning-color: #F39C12;
+            --error-color: #E74C3C;
+            --background-color: #F7F9FB;
+            --surface-color: #FFFFFF;
+            --text-primary: #2C3E50;
+            --text-secondary: #6C757D;
+            --text-muted: #95A5A6;
+            --border-color: #E1E8ED;
+            --shadow-light: 0 2px 4px rgba(44, 62, 80, 0.08);
+            --shadow-medium: 0 4px 12px rgba(44, 62, 80, 0.12);
+            --shadow-heavy: 0 8px 25px rgba(44, 62, 80, 0.15);
+            --radius-small: 6px;
+            --radius-medium: 8px;
+            --radius-large: 12px;
+            --transition: all 0.2s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', 'Roboto', sans-serif;
+            background: var(--background-color);
+            color: var(--text-primary);
+            font-size: 14px;
+            line-height: 1.5;
+            overflow: hidden;
+            font-weight: 400;
+        }
+        
+        .app {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: var(--primary-color);
+            color: white;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-medium);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo-img {
+            height: 32px;
+            width: auto;
+            filter: brightness(0) invert(1);
+            opacity: 0.95;
+        }
+
+        .header-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .nav-button {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius-small);
+            color: white;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 500;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .nav-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .nav-button.active {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.4);
+            font-weight: 600;
+        }
+
+        .clear-button {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(231, 76, 60, 0.1);
+            border: 1px solid rgba(231, 76, 60, 0.3);
+            border-radius: var(--radius-small);
+            color: #E74C3C;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+        }
+
+        .clear-button:hover {
+            background: rgba(231, 76, 60, 0.2);
+            border-color: rgba(231, 76, 60, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .clear-button svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .header-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success-color);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .toolbar {
+            background: var(--surface-color);
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            gap: 12px;
+            box-shadow: var(--shadow-light);
+        }
+
+        .btn {
+            padding: 10px 16px;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            border-radius: var(--radius-small);
+            color: var(--text-primary);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            background: var(--background-color);
+            border-color: var(--accent-color);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-light);
+        }
+
+        .btn.active {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+            box-shadow: var(--shadow-light);
+        }
+
+        .btn.primary {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .btn.primary:hover {
+            background: #094046;
+            border-color: #094046;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-medium);
+        }
+        
+        .main {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+        
+        .sidebar {
+            width: 320px;
+            background: var(--surface-color);
+            border-right: 1px solid var(--border-color);
+            padding: 24px;
+            overflow-y: auto;
+            box-shadow: var(--shadow-light);
+        }
+
+        .content {
+            flex: 1;
+            background: var(--background-color);
+            overflow-y: auto;
+        }
+        
+        .detail-panel {
+            width: 420px;
+            background: var(--surface-color);
+            border-left: 1px solid var(--border-color);
+            padding: 0;
+            overflow-y: auto;
+            display: none;
+            box-shadow: var(--shadow-medium);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .detail-panel.show {
+            display: block;
+            transform: translateX(0);
+        }
+        
+        /* Tree Styles */
+        .tree {
+            font-family: var(--font-family);
+            font-size: 13px;
+            padding: 24px;
+            background: var(--surface-color);
+            border-radius: var(--radius-medium);
+            margin: 16px;
+            box-shadow: var(--shadow-light);
+        }
+
+        .tree-item {
+            padding: 8px 12px;
+            border-radius: var(--radius-small);
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: var(--transition);
+            position: relative;
+            margin: 2px 0;
+        }
+
+        .tree-item:hover {
+            background: var(--background-color);
+            transform: translateX(4px);
+            box-shadow: var(--shadow-light);
+        }
+
+        .tree-item.device {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .tree-item.device:hover {
+            background: rgba(11, 76, 95, 0.08);
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .tree-item.selected {
+            background: var(--accent-color);
+            color: white;
+            box-shadow: var(--shadow-medium);
+        }
+
+        .tree-item.point {
+            font-style: italic;
+            color: var(--text-muted);
+            padding-left: 32px;
+        }
+
+        .tree-item.point:hover {
+            background: rgba(245, 166, 35, 0.1);
+            border-left: 3px solid var(--accent-color);
+        }
+
+        /* Delete button styles */
+        .delete-btn {
+            width: 18px;
+            height: 18px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            opacity: 0;
+            transition: all 0.2s ease;
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .tree-item:hover .delete-btn {
+            opacity: 1;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+            transform: scale(1.1);
+            box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+        }
+
+        /* Excluded items styles */
+        .tree-item.excluded {
+            opacity: 0.4;
+            text-decoration: line-through;
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .tree-item.excluded .device-checkbox {
+            pointer-events: none;
+            opacity: 0.3;
+        }
+
+        .tree-item.excluded .node-name {
+            color: #666;
+        }
+
+        .tree-item.excluded .delete-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        .tree-item.excluded .delete-btn:hover {
+            background: #218838;
+            transform: scale(1.1);
+            box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+        }
+
+        /* Expand button styles */
+        .expand-btn {
+            width: 16px;
+            height: 16px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .expand-btn:hover {
+            background: var(--accent-color);
+            transform: scale(1.1);
+        }
+
+        .expand-spacer {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+
+        .node-icon {
+            flex-shrink: 0;
+        }
+
+        .node-name {
+            flex-grow: 1;
+        }
+
+        .tree-children {
+            margin-left: 24px;
+            display: none;
+            border-left: 2px solid var(--border-color);
+            margin-top: 4px;
+            padding-left: 8px;
+        }
+
+        .tree-children.open {
+            display: block;
+        }
+
+        /* Checkbox styles */
+        .device-checkbox {
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+            cursor: pointer;
+            accent-color: var(--primary-color);
+            flex-shrink: 0;
+        }
+
+        .tree-item.device-checked {
+            background: rgba(52, 152, 219, 0.1);
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .device-item.device-checked {
+            background: rgba(52, 152, 219, 0.15);
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .template-controls {
+            display: flex;
+            gap: 8px;
+            margin-left: 12px;
+        }
+
+        .template-control-btn {
+            padding: 4px 8px;
+            font-size: 12px;
+            border: 1px solid var(--border-color);
+            background: white;
+            border-radius: var(--radius-small);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .template-control-btn:hover {
+            background: var(--background-color);
+            border-color: var(--primary-color);
+        }
+
+        .template-control-btn.check-all {
+            color: var(--success-color);
+            border-color: var(--success-color);
+        }
+
+        .template-control-btn.uncheck-all {
+            color: var(--error-color);
+            border-color: var(--error-color);
+        }
+
+        .tree-toggle {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            color: var(--text-secondary);
+        }
+
+        .tree-toggle.expanded {
+            transform: rotate(90deg);
+        }
+
+        .tree-icon {
+            color: var(--accent-color);
+        }
+
+        .tree-icon.device {
+            color: var(--success-color);
+        }
+
+        .tree-icon.junk {
+            color: var(--text-muted);
+        }
+        
+        .point {
+            padding: 6px 12px;
+            border-radius: var(--radius-small);
+            cursor: copy;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            transition: var(--transition);
+            margin: 1px 0;
+        }
+
+        .point:hover {
+            background: rgba(52, 152, 219, 0.08);
+            transform: translateX(6px);
+            color: var(--accent-color);
+            box-shadow: var(--shadow-light);
+        }
+
+        .point-icon {
+            width: 12px;
+            height: 12px;
+            fill: var(--accent-color);
+            flex-shrink: 0;
+        }
+
+        .point-name {
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 12px;
+        }
+        
+        /* Templates Report */
+        .templates-report {
+            padding: 20px;
+        }
+
+        .definition-builder {
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .definition-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--surface-color);
+            border-radius: var(--radius-medium);
+            box-shadow: var(--shadow-light);
+            border: 1px solid var(--border-color);
+        }
+
+        .definition-section h3 {
+            margin: 0 0 15px 0;
+            color: var(--primary-color);
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-small);
+            font-size: 14px;
+            background: white;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .template-preview {
+            margin-top: 15px;
+            padding: 15px;
+            background: var(--background-color);
+            border-radius: var(--radius-small);
+            border: 1px solid var(--border-color);
+        }
+
+        .partial-matches {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .partial-match-item {
+            padding: 12px;
+            background: var(--background-color);
+            border-radius: var(--radius-small);
+            border: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .partial-match-info {
+            flex-grow: 1;
+        }
+
+        .partial-match-similarity {
+            font-weight: 600;
+            color: var(--accent-color);
+        }
+
+        .btn-primary {
+            background: var(--accent-color);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-small);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #2980b9;
+        }
+
+        .btn-primary:disabled {
+            background: var(--text-muted);
+            cursor: not-allowed;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .summary-stats {
+            display: flex;
+            gap: 40px;
+            margin-top: 15px;
+        }
+        
+        .stat {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+            text-transform: uppercase;
+        }
+        
+        .template-card {
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .template-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .template-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .template-count {
+            background: #3498db;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .device-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 8px;
+            margin-top: 12px;
+        }
+        
+        .device-item {
+            background: #f8f9fa;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 13px;
+            border-left: 3px solid #3498db;
+            cursor: help;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .points-summary {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #e9ecef;
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .points-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .expand-points-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--accent-color);
+            font-size: 12px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            transition: var(--transition);
+        }
+
+        .expand-points-btn:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .points-expanded {
+            margin-top: 8px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 4px;
+        }
+
+        .template-point-item {
+            padding: 4px 8px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: var(--transition);
+        }
+
+        .template-point-item:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        /* Template Naming and Time Inputs */
+        .template-name-input {
+            background: transparent;
+            border: 1px solid transparent;
+            font-weight: 600;
+            font-size: 16px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            color: inherit;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .template-name-input:hover,
+        .template-name-input:focus {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.3);
+            outline: none;
+        }
+
+        .template-time-input-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 12px;
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        .template-hours-input {
+            width: 80px;
+            padding: 4px 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: white;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .template-hours-input:hover,
+        .template-hours-input:focus {
+            border-color: var(--accent-color);
+            background: #f8f9fa;
+            outline: none;
+        }
+
+        .template-hours-input::placeholder {
+            color: #6c757d;
+        }
+
+        .export-quote-section {
+            margin-top: 16px;
+            text-align: center;
+        }
+
+        .quote-export {
+            background: var(--success-color) !important;
+            border-color: var(--success-color) !important;
+        }
+
+        .quote-export:hover {
+            background: #219a52 !important;
+            border-color: #219a52 !important;
+        }
+
+        /* Detail Panel */
+        .detail-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 20px 24px;
+            margin: 0;
+            box-shadow: var(--shadow-light);
+        }
+
+        .detail-header h3 {
+            margin: 0 0 8px 0;
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .detail-header .device-path {
+            font-size: 12px;
+            opacity: 0.9;
+            font-family: 'Monaco', 'Menlo', monospace;
+        }
+
+        .detail-section {
+            margin: 16px 24px;
+            padding: 16px;
+            background: var(--background-color);
+            border-radius: var(--radius-medium);
+            border: 1px solid var(--border-color);
+        }
+
+        .detail-section h4 {
+            margin: 0 0 12px 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* Clickable device links in detail panel */
+        .device-link {
+            padding: 4px 8px;
+            margin: 4px 0;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .device-link:hover {
+            background: #3498db !important;
+            color: white !important;
+            transform: translateX(4px);
+        }
+        
+        .device-link.current {
+            background: #3498db;
+            color: white;
+        }
+        
+        /* Copyable points in detail panel */
+        .detail-point {
+            padding: 4px;
+            margin: 2px 0;
+            cursor: copy;
+            border-radius: 4px;
+            transition: all 0.2s;
+            color: #495057;
+        }
+        
+        .detail-point:hover {
+            background: #e8f4fd;
+            transform: translateX(2px);
+        }
+        
+        .detail-point::before {
+            content: '• ';
+            color: #6c757d;
+        }
+        
+        /* Partial match differences */
+        .diff-point {
+            padding: 3px 6px;
+            margin: 2px 0;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+        
+        .diff-point.missing {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .diff-point.extra {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        /* Status */
+        .file-info {
+            padding: 16px;
+            background: var(--surface-color);
+            border-radius: var(--radius-medium);
+            margin-bottom: 24px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-light);
+        }
+
+        .file-info strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .tips-section {
+            background: var(--surface-color);
+            border-radius: var(--radius-medium);
+            padding: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-light);
+            font-size: 11px;
+            line-height: 1.4;
+        }
+
+        .tips-section strong {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        /* Configuration Panel */
+        .config-section {
+            background: var(--surface-color);
+            border-radius: var(--radius-medium);
+            padding: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-light);
+            margin-bottom: 16px;
+        }
+
+        .config-section h4 {
+            margin: 0 0 12px 0;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--primary-color);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .config-group {
+            margin-bottom: 12px;
+        }
+
+        .config-group label {
+            display: block;
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+
+        .config-input {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-small);
+            font-size: 11px;
+            background: var(--background-color);
+            color: var(--text-primary);
+            transition: var(--transition);
+        }
+
+        .config-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1);
+        }
+
+        .config-display {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-small);
+            font-size: 11px;
+            background: var(--background-color);
+            color: var(--text-secondary);
+            font-family: monospace;
+        }
+
+        /* Export Section */
+        .export-section {
+            background: var(--surface-color);
+            border-radius: var(--radius-medium);
+            padding: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-light);
+            margin-bottom: 16px;
+        }
+
+        .export-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .btn-export {
+            padding: 8px 12px;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: var(--radius-small);
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 500;
+            transition: var(--transition);
+            text-align: center;
+        }
+
+        .btn-export:hover {
+            background: #2980b9;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-light);
+        }
+
+        .btn-export.secondary {
+            background: var(--secondary-color);
+        }
+
+        .btn-export.secondary:hover {
+            background: #1a252f;
+        }
+        
+        .stats-mini {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .stat-mini {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            padding: 16px;
+            border-radius: var(--radius-medium);
+            text-align: center;
+            box-shadow: var(--shadow-light);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-mini:hover {
+            box-shadow: var(--shadow-medium);
+            transform: translateY(-2px);
+        }
+
+        .stat-mini::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--accent-color);
+        }
+
+        .stat-mini-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 4px;
+        }
+
+        .stat-mini-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--surface-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 16px 20px;
+            border-radius: var(--radius-medium);
+            box-shadow: var(--shadow-heavy);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 500;
+            max-width: 350px;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success {
+            border-left: 4px solid var(--success-color);
+        }
+
+        .toast.error {
+            border-left: 4px solid var(--error-color);
+        }
+
+        .toast-icon {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+
+        .toast.success .toast-icon {
+            color: var(--success-color);
+        }
+
+        .toast.error .toast-icon {
+            color: var(--error-color);
+        }
+        
+        input[type="file"] {
+            display: none;
+        }
+
+        /* SVG Icons */
+        .icon {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+            flex-shrink: 0;
+        }
+
+        .icon-large {
+            width: 20px;
+            height: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- SVG Icon Definitions -->
+    <svg style="display: none">
+        <defs>
+            <symbol id="icon-folder" viewBox="0 0 24 24">
+                <path d="M10 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2h-8l-2-2z"/>
+            </symbol>
+            <symbol id="icon-folder-open" viewBox="0 0 24 24">
+                <path d="M19 20H4c-1.11 0-2-.89-2-2V6c0-1.11.89-2 2-2h6l2 2h7c1.11 0 2 .89 2 2H4v10l1.14-4.58c.25-.99 1.12-1.7 2.15-1.7H21c.46 0 .86.28 1.03.67L19 20z"/>
+            </symbol>
+            <symbol id="icon-device" viewBox="0 0 24 24">
+                <path d="M20 3H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h3l-1 1v2h12v-2l-1-1h3c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 13H4V5h16v11z"/>
+            </symbol>
+            <symbol id="icon-point" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="4"/>
+                <path d="M16 8v5h3v-5zM2 8v5h3v-5z"/>
+            </symbol>
+            <symbol id="icon-tree" viewBox="0 0 24 24">
+                <path d="M22 11V3h-7v3H9V3H2v8h7V8h2v10h4v3h7v-8h-7v3h-2V8h2v3z"/>
+            </symbol>
+            <symbol id="icon-templates" viewBox="0 0 24 24">
+                <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 2 2h16c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+            </symbol>
+            <symbol id="icon-expand" viewBox="0 0 24 24">
+                <path d="M12 5.83L15.17 9l1.41-1.41L12 3 7.41 7.59 8.83 9 12 5.83zm0 12.34L8.83 15l-1.41 1.41L12 21l4.59-4.59L15.17 15 12 18.17z"/>
+            </symbol>
+            <symbol id="icon-collapse" viewBox="0 0 24 24">
+                <path d="M7.41 18.59L8.83 20 12 16.83 15.17 20l1.41-1.41L12 14l-4.59 4.59zm9.18-13.18L15.17 4 12 7.17 8.83 4 7.41 5.41 12 10l4.59-4.59z"/>
+            </symbol>
+            <symbol id="icon-close" viewBox="0 0 24 24">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </symbol>
+            <symbol id="icon-upload" viewBox="0 0 24 24">
+                <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+            </symbol>
+            <symbol id="icon-chart" viewBox="0 0 24 24">
+                <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
+            </symbol>
+            <symbol id="icon-chevron-right" viewBox="0 0 24 24">
+                <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+            </symbol>
+            <symbol id="icon-chevron-down" viewBox="0 0 24 24">
+                <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+            </symbol>
+            <symbol id="icon-building" viewBox="0 0 24 24">
+                <path d="M12 2L2 7v10c0 5.55 3.84 9.71 9 11 5.16-1.29 9-5.45 9-11V7l-10-5z"/>
+            </symbol>
+            <symbol id="icon-qag-logo" viewBox="0 0 100 100">
+                <!-- QAG Logo - simplified representation -->
+                <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" stroke-width="4"/>
+                <text x="50" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-weight="bold" font-size="20" fill="currentColor">QAG</text>
+                <text x="50" y="65" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="currentColor">GRAPHICS</text>
+            </symbol>
+        </defs>
+    </svg>
+    <div class="app">
+        <div class="header">
+            <h1>
+                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAATIAAAByCAMAAADnN60vAAAAKlBMVEVHcEz///////////////////////////////////////////////////+LBpLMAAAADXRSTlMAQr+B2ZgQ7yBgMK9wl984bwAABjhJREFUeNrtXd1ytSoMJYHwp3n/1z2floKboqOmzpmC66ajmyhGwlpBoOrFixcvXrx48eL/AOBNzGpUGL4JrwZF4JvQSqkhG5p1fA/GKgU8os+IbyIopZCdVaPB801gimlSowH5JuA7pqMaC8B3kBqXTs1tLBi+B2dLTIMaCbNAYOSYNmog3BcYHzGt1Tggvgn4iGk3ThoQJQJDc8JQQgP5JnyO6cEYAAR9f4npkYSGlQgM+JE9jQAtSy4/YUZINb0TJZcJQwkNEiWXI443ipPLGpPqHShLLhNGEhqi0euJPzBGqilMLpvofExb8x7w9oBR32PanncRr8b0IKnmJHlqP+KHTTjgw6tRPUiqaXgP83nuGEpozLwHc0GhjCQ05I2kNNNBUk2Sd0XAPJLQ+BXCo6GEBvIeSDxy1OfH8zMx9QqNkz13uHadYYSGFumDttDoe0z7F1UoDiI0iPcwib8b9/nxPJ4QGK/QuBdMb6r5TJc99y807IHAkAqWTj+en5afb6qZ4H+/75k6FxqXGW74MW040FHSWO/04/kjw4K251TzssAYfkzbuocEATJ3+vHcwi6UCLF3ofE3iLh3WNerNjsOTLgJvwiNXoca8bD7J8EEPWU6zTOPu2nrBNNAodfRDDpeVs83EZcW3KeUVdYd5oNGMKXd90qXx/kgSBZO6F7H/4/zwUnAANb1JjAS4DAf9CxggNBbgnkuH9QSBjDd9f1f8BKhccwA0JvAOJcPBgkDUKezf6RC4yA18q4zgXHi06N0GbDuddTnWGiQZCcz08vY4jWhIWKAvy0wgBBnf/3To5ZsnIFtgeHJMLObtueD/odGtSe3LRp0BuzY5gKz/z4OpVgqsL24IZ99tN6M4nJgJ2Y0zOG60JAwQOQFuMvSaPNJ1+JVi1VR5AITm7Z1VpsqkIxTgc96uJCPC+FPbOAfHMOlVJN+ZSMIX3msNegILWK1pi6K/MO4tq3qv+8yqkTR/HEcGfX6XthcneMk326EGn2nCQCUHzT3Dq7RZSCkojrVhbTWZDKr1LbL1bXW6FIV2i5LmhMDzCaNGSwGGgDWY6UZNCtiNbG/9OkRpZvazD8EhsmOCqUJ2p9pVbpxyEVdemrIoYEt2+V8bqJhx2WlHqngrCAdp5usLmM2i+9ujGlLGMCE+vWUiKIP761HdQTjxtFx6zKff6xsl/PZqXrXZVDqEdcisBTPu+qG1WXIURHDRaFhhWuofaPjnDfNCHNsWVNpXlM3u+SyXOWpst1zmYEVZusyvXlBABDXCzrty6slzZ5JGb4zpq0lDKD2HnrTE/v1+SnHYfl1x9pCCrvKtg5M+KCD4rKqHoV32dDsUwdPqDQi04WZZmUwVR9i4n3jpsvs9iBlbQtJVdODvkVwxC/EqgchVdlmq0wQ/oLLQomO8NWMCWZkY5+Y42ROGxcvlYN0AZv/1C6D0jViFfYN28qp512m4vRJe7iGqn1kOQ3wWeNc1RILObZUHZmL/YHLmFRte0HKYqtyNpDZZsXgb6aaklG32rg8msXoU4GVzRHRfBq4pEH8EmfFZbCcmpM/f9oys8MFOqoDl1HyS8mpEnwwyeT5HXjb0A0NiKl3xtQSTHt+6LQx37os/wgt2+p52y7L9SjEHRAxZmmPj27DaM7OIS3CMxTCCfWd5w/vulgqB7WUhYbtOZflepRXM5cXZJjx2b245sM2OrVuo70Ct/o7ndGwYP6MTJOkkg2u7bKG7TmXlXqkTt+r+P0ofjkxPbvrj7NX5sNbUzt0MbWl+4rt/rXtstr2pMvqeuj6rcPDGxfThWWdtc8o6/iSQmUEl107NVw2N2xPu0xFUypR1ys8/v834NruJPqrrCNaHDojImz+aQqpAk9fJbUKa+dMiBhzSWzZVlcox6vx14mUz+sk+EF9HPMEz++Th1enyPo084+MPTNz8NFpiV4VxOpuDwqNcHeK7J//9OT5NgN0vkhiHyRhAOh3kcQTQmOVBlO3iySOECQMYN2QiySMhAHmIRdJgIQBFA608U/BJGGA2P96/Aa8iAF09+vxW9ASBlBmRAawIgaAIRkgiBiAhmQAlDCAdSMyALCEAWBIBiARA+CQDKDvwi8ypdtVvy9evHjxYjT8B5GvsSxWBvj8AAAAAElFTkSuQmCC" alt="QAG Logo" class="logo-img">
+                Metasys Explorer
+            </h1>
+            <button class="clear-button" onclick="clearAllData()" title="Clear All Data">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 6H5H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6M19 6V20C19 20.5304 18.7893 21.0391 18.4142 21.4142C18.0391 21.7893 17.5304 22 17 22H7C6.46957 22 5.96086 21.7893 5.58579 21.4142C5.21071 21.0391 5 20.5304 5 20V6H19Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Clear All Data
+            </button>
+            <div class="nav-buttons">
+                <!-- TODO: Update links to actual file paths -->
+                <a href="metasys-explorer.html" class="nav-button active">Metasys Explorer</a>
+                <a href="niagara-navigator.html" class="nav-button">Niagara Navigator</a>
+                <a href="quote-tool.html" class="nav-button">Quote Tool</a>
+            </div>
+        </div>
+
+        <div class="toolbar">
+            <button class="btn primary" onclick="openFile()">
+                <svg class="icon"><use href="#icon-upload"></use></svg>
+                Open CSV
+            </button>
+            <button class="btn" onclick="openCompareFile()" id="compareBogBtn" style="display: none;">
+                <svg class="icon"><use href="#icon-upload"></use></svg>
+                Compare CSV
+            </button>
+            <button class="btn" onclick="clearComparison()" id="clearComparisonBtn" style="display: none;">
+                <svg class="icon"><use href="#icon-close"></use></svg>
+                Clear Comparison
+            </button>
+            <button class="btn active" onclick="showView('tree')">
+                <svg class="icon"><use href="#icon-tree"></use></svg>
+                Tree
+            </button>
+            <button class="btn" onclick="showView('templates')">
+                <svg class="icon"><use href="#icon-templates"></use></svg>
+                Templates
+            </button>
+            <button class="btn" onclick="showView('definition')">
+                <svg class="icon"><use href="#icon-device"></use></svg>
+                Definition Builder
+            </button>
+            <button class="btn" onclick="toggleDisplayNames()" id="displayNamesBtn">
+                <svg class="icon"><use href="#icon-templates"></use></svg>
+                Display Names
+            </button>
+            <button class="btn" onclick="showView('comparison')" id="comparisonBtn" style="display: none;">
+                <svg class="icon"><use href="#icon-chart"></use></svg>
+                Comparison
+            </button>
+            <button class="btn" onclick="expandAll()">
+                <svg class="icon"><use href="#icon-expand"></use></svg>
+                Expand
+            </button>
+            <button class="btn" onclick="collapseAll()">
+                <svg class="icon"><use href="#icon-collapse"></use></svg>
+                Collapse
+            </button>
+            <button class="btn" onclick="downloadJSON()">
+                <svg class="icon"><use href="#icon-chart"></use></svg>
+                Export JSON
+            </button>
+            <button class="btn" onclick="closeDetail()">
+                <svg class="icon"><use href="#icon-close"></use></svg>
+                Close Detail
+            </button>
+        </div>
+        
+        <div class="main">
+            <div class="sidebar">
+                <div class="file-info">
+                    <input type="file" id="fileInput" accept=".csv" onchange="loadFile(event)">
+                    <input type="file" id="compareFileInput" accept=".csv" onchange="loadCompareFile(event)" style="display: none;">
+                    <strong>File:</strong> <span id="fileName">None</span>
+                    <div id="compareFileInfo" style="display: none; margin-top: 8px;">
+                        <strong>Compare:</strong> <span id="compareFileName">None</span>
+                    </div>
+                </div>
+
+                <div class="stats-mini">
+                    <div class="stat-mini">
+                        <div class="stat-mini-value" id="deviceCount">0</div>
+                        <div class="stat-mini-label">Devices</div>
+                    </div>
+                    <div class="stat-mini">
+                        <div class="stat-mini-value" id="pointCount">0</div>
+                        <div class="stat-mini-label">Points</div>
+                    </div>
+                    <div class="stat-mini">
+                        <div class="stat-mini-value" id="templateCount">0</div>
+                        <div class="stat-mini-label">Templates</div>
+                    </div>
+                    <div class="stat-mini">
+                        <div class="stat-mini-value" id="partialCount">0</div>
+                        <div class="stat-mini-label">Partials</div>
+                    </div>
+                </div>
+
+
+
+                <div class="tips-section">
+                    <strong>Tips</strong>
+                    • Click device → see template<br>
+                    • Click point → copy point name<br>
+                    • Click devices in detail panel<br>
+                    • Export JSON for analysis
+                </div>
+            </div>
+            
+            <div class="content">
+                <div id="treeView" class="tree"></div>
+                <div id="templatesView" class="templates-report" style="display: none;"></div>
+                <div id="comparisonView" class="templates-report" style="display: none;"></div>
+                <div id="definitionView" class="definition-builder" style="display: none;">
+                    <div class="summary-card">
+                        <h2>🏗️ SCT Equipment Definition Builder</h2>
+                        <p>Create SCT equipment definitions from detected templates and partial matches.</p>
+                    </div>
+
+                    <div class="definition-section">
+                        <h3>1. Select Base Template</h3>
+                        <select id="definitionTemplateSelect" class="form-control">
+                            <option value="">Choose a template...</option>
+                        </select>
+                        <div id="templatePreview" class="template-preview" style="display: none;"></div>
+                    </div>
+
+                    <div class="definition-section" id="partialMatchesSection" style="display: none;">
+                        <h3>2. Include Partial Matches (80%+ similarity)</h3>
+                        <div id="partialMatchesList" class="partial-matches"></div>
+                    </div>
+
+                    <div class="definition-section">
+                        <h3>3. Definition Settings</h3>
+                        <div class="form-group">
+                            <label for="definitionName">Definition Name:</label>
+                            <input type="text" id="definitionName" class="form-control" placeholder="Enter definition name...">
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="useDisplayNamesInShort"> Use display names for Short Name field
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="definition-section">
+                        <h3>4. Export Definition</h3>
+                        <button id="exportXMLBtn" class="btn btn-primary" disabled>
+                            Export SCT Definition (.xml)
+                        </button>
+                        <button id="exportCSVBtn" class="btn btn-secondary" disabled style="margin-left: 10px;">
+                            Export Equipment (.csv)
+                        </button>
+                        <div id="definitionPreview" class="definition-preview" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="detailPanel" class="detail-panel"></div>
+        </div>
+    </div>
+    
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // Global state
+        let appData = null;
+        let compareData = null;
+        let currentView = 'tree';
+        let comparisonActive = false;
+        let useDisplayNames = false;
+        let checkedItems = new Set(); // Track checked equipment/devices
+        let excludedItems = new Set(); // Track excluded equipment/devices
+
+        // Helper function for display names
+        function getDisplayName(item) {
+            return (useDisplayNames && item.displayName) ? item.displayName : item.name;
+        }
+
+        function toggleDisplayNames() {
+            useDisplayNames = !useDisplayNames;
+            const btn = document.getElementById('displayNamesBtn');
+            if (useDisplayNames) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+            updateDisplay();
+
+            // Auto-save after toggling display names
+            saveToLocalStorage();
+        }
+
+        // Checkbox functionality
+        function toggleDeviceCheck(event, path) {
+            event.stopPropagation(); // Prevent triggering row click
+
+            if (checkedItems.has(path)) {
+                checkedItems.delete(path);
+            } else {
+                checkedItems.add(path);
+            }
+
+            updateCheckboxDisplay();
+            updateCheckedCounter();
+            saveToLocalStorage();
+        }
+
+        function checkAllInTemplate(templateIndex) {
+            const template = [...appData.templates.exact].sort((a, b) => b.devices.length - a.devices.length)[templateIndex];
+            template.devices.forEach(device => {
+                checkedItems.add(device.cleanPath);
+            });
+
+            updateCheckboxDisplay();
+            updateCheckedCounter();
+            saveToLocalStorage();
+        }
+
+        function uncheckAllInTemplate(templateIndex) {
+            const template = [...appData.templates.exact].sort((a, b) => b.devices.length - a.devices.length)[templateIndex];
+            template.devices.forEach(device => {
+                checkedItems.delete(device.cleanPath);
+            });
+
+            updateCheckboxDisplay();
+            updateCheckedCounter();
+            saveToLocalStorage();
+        }
+
+        function checkAllDevices() {
+            if (!appData || !appData.devices) return;
+
+            appData.devices.forEach(device => {
+                checkedItems.add(device.cleanPath);
+            });
+
+            updateCheckboxDisplay();
+            updateCheckedCounter();
+            saveToLocalStorage();
+        }
+
+        function uncheckAllDevices() {
+            checkedItems.clear();
+            updateCheckboxDisplay();
+            updateCheckedCounter();
+            saveToLocalStorage();
+        }
+
+        // Toggle exclude functionality
+        function toggleExcludeNode(nodePath, nodeName) {
+            const isCurrentlyExcluded = excludedItems.has(nodePath);
+            const action = isCurrentlyExcluded ? 'Include' : 'Exclude';
+
+            // Count affected items for confirmation
+            const affectedItems = countAffectedItems(nodePath);
+
+            const confirmMessage = `${action} "${nodeName}" and all its children?\n\nThis will ${action.toLowerCase()}:\n- ${affectedItems.devices} device(s)\n- ${affectedItems.points} point(s)\n\nFrom templates and counts.`;
+
+            if (!confirm(confirmMessage)) {
+                return;
+            }
+
+            if (isCurrentlyExcluded) {
+                // Include the item and all its children
+                includeItemRecursively(nodePath);
+            } else {
+                // Exclude the item and all its children
+                excludeItemRecursively(nodePath);
+                // Remove from checked items when excluding
+                clearCheckedItemsForPath(nodePath);
+            }
+
+            // Rebuild templates
+            rebuildTemplates();
+
+            // Update all displays
+            updateDisplay();
+            updateTree();
+            updateTemplates();
+            updateCheckboxDisplay();
+            updateCheckedCounter();
+
+            // Close detail panel if showing excluded device
+            const detailPanel = document.getElementById('detailPanel');
+            if (detailPanel && detailPanel.classList.contains('show')) {
+                detailPanel.classList.remove('show');
+            }
+
+            // Save to localStorage
+            saveToLocalStorage();
+
+            const statusMessage = isCurrentlyExcluded ? 'Included' : 'Excluded';
+            showToast(`${statusMessage} "${nodeName}" and ${affectedItems.devices + affectedItems.points} associated items`, 'success');
+        }
+
+        function excludeItemRecursively(nodePath) {
+            // Add the main path
+            excludedItems.add(nodePath);
+
+            // Add all devices that start with this path
+            appData.devices.forEach(device => {
+                if (device.cleanPath.startsWith(nodePath) || device.cleanPath === nodePath) {
+                    excludedItems.add(device.cleanPath);
+                }
+            });
+
+            // Add all points that start with this path
+            if (appData.points) {
+                if (typeof appData.points.forEach === 'function') {
+                    appData.points.forEach(point => {
+                        if (point.cleanPath && (point.cleanPath.startsWith(nodePath) || point.cleanPath === nodePath)) {
+                            excludedItems.add(point.cleanPath);
+                        }
+                    });
+                } else if (typeof appData.points.values === 'function') {
+                    Array.from(appData.points.values()).forEach(point => {
+                        if (point.cleanPath && (point.cleanPath.startsWith(nodePath) || point.cleanPath === nodePath)) {
+                            excludedItems.add(point.cleanPath);
+                        }
+                    });
+                }
+            }
+        }
+
+        function includeItemRecursively(nodePath) {
+            // Remove the main path
+            excludedItems.delete(nodePath);
+
+            // Remove all devices that start with this path
+            appData.devices.forEach(device => {
+                if (device.cleanPath.startsWith(nodePath) || device.cleanPath === nodePath) {
+                    excludedItems.delete(device.cleanPath);
+                }
+            });
+
+            // Remove all points that start with this path
+            if (appData.points) {
+                if (typeof appData.points.forEach === 'function') {
+                    appData.points.forEach(point => {
+                        if (point.cleanPath && (point.cleanPath.startsWith(nodePath) || point.cleanPath === nodePath)) {
+                            excludedItems.delete(point.cleanPath);
+                        }
+                    });
+                } else if (typeof appData.points.values === 'function') {
+                    Array.from(appData.points.values()).forEach(point => {
+                        if (point.cleanPath && (point.cleanPath.startsWith(nodePath) || point.cleanPath === nodePath)) {
+                            excludedItems.delete(point.cleanPath);
+                        }
+                    });
+                }
+            }
+        }
+
+        function countAffectedItems(nodePath) {
+            let devices = 0;
+            let points = 0;
+
+            // Count affected devices
+            appData.devices.forEach(device => {
+                if (device.cleanPath.startsWith(nodePath) || device.cleanPath === nodePath) {
+                    devices++;
+                }
+            });
+
+            // Count affected points
+            if (appData.points) {
+                if (typeof appData.points.forEach === 'function') {
+                    appData.points.forEach(point => {
+                        if (point.cleanPath && (point.cleanPath.startsWith(nodePath) || point.cleanPath === nodePath)) {
+                            points++;
+                        }
+                    });
+                } else if (typeof appData.points.values === 'function') {
+                    Array.from(appData.points.values()).forEach(point => {
+                        if (point.cleanPath && (point.cleanPath.startsWith(nodePath) || point.cleanPath === nodePath)) {
+                            points++;
+                        }
+                    });
+                }
+            }
+
+            return { devices, points };
+        }
+
+        function clearCheckedItemsForPath(nodePath) {
+            const itemsToRemove = [];
+            checkedItems.forEach(item => {
+                if (item.startsWith(nodePath) || item === nodePath) {
+                    itemsToRemove.push(item);
+                }
+            });
+            itemsToRemove.forEach(item => checkedItems.delete(item));
+        }
+
+
+        function rebuildTemplates() {
+            if (!appData.devices || appData.devices.length === 0) {
+                appData.templates = { exact: [], partial: [] };
+                return;
+            }
+
+            // Filter out excluded devices before building templates
+            const nonExcludedDevices = appData.devices.filter(device => !excludedItems.has(device.cleanPath));
+
+            if (nonExcludedDevices.length === 0) {
+                appData.templates = { exact: [], partial: [] };
+                return;
+            }
+
+            // Rebuild templates using the existing findTemplates function with non-excluded devices
+            const newTemplates = findTemplates(nonExcludedDevices);
+            appData.templates = {
+                exact: newTemplates.exact,
+                partial: newTemplates.partial
+            };
+        }
+
+        function updateCheckboxDisplay() {
+            // Update tree view checkboxes
+            document.querySelectorAll('.device-checkbox').forEach(checkbox => {
+                const path = checkbox.dataset.path;
+                checkbox.checked = checkedItems.has(path);
+
+                // Update visual styling
+                const treeItem = checkbox.closest('.tree-item');
+                if (treeItem) {
+                    if (checkedItems.has(path)) {
+                        treeItem.classList.add('device-checked');
+                    } else {
+                        treeItem.classList.remove('device-checked');
+                    }
+                }
+
+                // Update template view device items
+                const deviceItem = checkbox.closest('.device-item');
+                if (deviceItem) {
+                    if (checkedItems.has(path)) {
+                        deviceItem.classList.add('device-checked');
+                    } else {
+                        deviceItem.classList.remove('device-checked');
+                    }
+                }
+            });
+        }
+
+        function updateCheckedCounter() {
+            const totalDevices = appData ? appData.devices.length : 0;
+            const checkedCount = checkedItems.size;
+
+            // Find or create checked counter display
+            let counterEl = document.getElementById('checkedCounter');
+            if (!counterEl) {
+                counterEl = document.createElement('div');
+                counterEl.id = 'checkedCounter';
+                counterEl.className = 'stat';
+                counterEl.innerHTML = `
+                    <div class="stat-value">${checkedCount}</div>
+                    <div class="stat-label">Checked</div>
+                `;
+
+                // Add to stats area
+                const statsContainer = document.querySelector('.status-info');
+                if (statsContainer) {
+                    statsContainer.appendChild(counterEl);
+                }
+            } else {
+                counterEl.innerHTML = `
+                    <div class="stat-value">${checkedCount}</div>
+                    <div class="stat-label">Checked</div>
+                `;
+            }
+        }
+
+        // File handling
+        function openFile() {
+            document.getElementById('fileInput').click();
+        }
+        
+        async function loadFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            document.getElementById('fileName').textContent = file.name;
+
+            try {
+                const csvContent = await loadCSV(file);
+                appData = processCSV(csvContent);
+                updateDisplay();
+                showToast('File loaded successfully');
+
+                // Show compare button after first file is loaded
+                document.getElementById('compareBogBtn').style.display = 'inline-flex';
+
+                // Auto-save after loading file
+                saveToLocalStorage();
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Error loading file');
+            }
+        }
+
+        function openCompareFile() {
+            document.getElementById('compareFileInput').click();
+        }
+
+        async function loadCompareFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            document.getElementById('compareFileName').textContent = file.name;
+
+            try {
+                const csvContent = await loadCSV(file);
+                compareData = processCSV(csvContent);
+                comparisonActive = true;
+
+                // Show comparison UI elements
+                document.getElementById('compareFileInfo').style.display = 'block';
+                document.getElementById('clearComparisonBtn').style.display = 'inline-flex';
+                document.getElementById('comparisonBtn').style.display = 'inline-flex';
+
+                updateDisplay();
+                showToast('Comparison file loaded successfully');
+
+                // Auto-save after loading comparison file
+                saveToLocalStorage();
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Error loading comparison file');
+            }
+        }
+
+        function clearComparison() {
+            compareData = null;
+            comparisonActive = false;
+
+            // Hide comparison UI elements
+            document.getElementById('compareFileInfo').style.display = 'none';
+            document.getElementById('clearComparisonBtn').style.display = 'none';
+            document.getElementById('comparisonBtn').style.display = 'none';
+
+            // Clear file input
+            document.getElementById('compareFileInput').value = '';
+
+            updateDisplay();
+            showToast('Comparison cleared');
+        }
+        
+        async function loadCSV(file) {
+            if (!file.name.endsWith('.csv')) {
+                throw new Error('Please upload a CSV file');
+            }
+            return await file.text();
+        }
+        
+
+
+        function processCSV(csvContent) {
+            const lines = csvContent.split('\n').filter(line => line.trim());
+            if (lines.length === 0) {
+                throw new Error('Empty CSV file');
+            }
+
+            // Parse CSV - check for two-column format (path, type) or single column
+            const header = lines[0].split(',');
+            const hasTypeColumn = header.length >= 2;
+            const hasDisplayColumn = header.length >= 3;
+
+            let pathIndex = 0;
+            let typeIndex = 1;
+            let displayIndex = 2;
+
+            if (!hasTypeColumn) {
+                // Legacy single column format - find path column
+                pathIndex = header.findIndex(col => col.toLowerCase().includes('fullpath') || col.toLowerCase().includes('object'));
+                if (pathIndex === -1) {
+                    throw new Error('No FullPath or Object column found in CSV');
+                }
+                typeIndex = -1; // No type column
+            }
+
+            console.log(`CSV format detected: ${hasDisplayColumn ? 'Three-column (path + type + display)' : hasTypeColumn ? 'Two-column (path + type)' : 'Single-column (path only)'}`);
+
+            // Step 1: Parse Metasys CSV structure with proper tier logic
+            const equipmentMap = new Map();
+            const points = new Map();
+            const allCleanPaths = new Set();
+            let currentEquipment = null;
+
+            // Helper function to convert full path to clean tier path
+            function pathToTierPath(fullPath) {
+                // AMLRiver/$site/ARG-RIS-APP-04:SNE-01/FC-A/FC-A.01ACGM004/FC-A.01ACGM004.CLG-EN
+                // becomes: AMLRiver/SNE-01/FC-A/01ACGM004/CLG-EN
+
+                console.log(`pathToTierPath input: ${fullPath}`);
+
+                let path = fullPath;
+
+                // Extract site name (before /$site/)
+                const siteMatch = path.match(/^([^\/]+)\/\$site\//);
+                const siteName = siteMatch ? siteMatch[1] : '';
+
+                // Remove site prefix
+                path = path.replace(/^[^\/]+\/\$site\//, '');
+
+                // Extract controller name (after colon)
+                path = path.replace(/([^:]+):([^\/]+)/, '$2');
+
+                console.log(`After processing controller: ${path}`);
+
+                // Split by slashes and process each segment
+                const segments = path.split('/');
+                const cleanSegments = [siteName]; // Start with site name
+
+                console.log(`Segments to process:`, segments);
+
+                for (let i = 0; i < segments.length; i++) {
+                    const segment = segments[i];
+                    if (!segment) continue;
+
+                    // Check if this is the last segment and it's a point (equipment.POINTNAME format)
+                    const isLastSegment = i === segments.length - 1;
+                    const previousSegment = i > 0 ? segments[i - 1] : '';
+                    // Fix: Point segment must have equipment name + additional point suffix
+                    // Equipment: "FC-B.02BCGM024" (just equipment name)
+                    // Point: "FC-B.02BCGM024.CLG-EN" (equipment name + point suffix)
+                    const isPointSegment = isLastSegment &&
+                                          segment.includes('.') &&
+                                          segment.startsWith(previousSegment + '.') &&
+                                          segment.length > previousSegment.length + 1;
+
+                    console.log(`Processing segment ${i}: "${segment}", isPointSegment: ${isPointSegment}`);
+
+                    if (isPointSegment) {
+                        // For point segments like "FC-A.01ACGM004.CLG-EN", extract just the point name "CLG-EN"
+                        const lastDotIndex = segment.lastIndexOf('.');
+                        const pointName = segment.substring(lastDotIndex + 1);
+                        cleanSegments.push(pointName);
+                        console.log(`  Point segment: extracted "${pointName}"`);
+                    } else if (segment.includes('.')) {
+                        // For equipment segments like "FC-A.01ACGM004", extract "01ACGM004"
+                        const dotIndex = segment.indexOf('.');
+                        const afterDot = segment.substring(dotIndex + 1);
+                        cleanSegments.push(afterDot);
+                        console.log(`  Equipment segment: extracted "${afterDot}"`);
+                    } else {
+                        // Regular segments (like FC-A) - keep as-is
+                        cleanSegments.push(segment);
+                        console.log(`  Regular segment: kept "${segment}"`);
+                    }
+                }
+
+                const result = cleanSegments.filter(s => s).join('/');
+                console.log(`pathToTierPath result: ${result}`);
+                return result;
+            }
+
+            // Process each CSV row (skip header)
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+
+                const cols = line.split(',');
+                const fullPath = cols[pathIndex]?.trim();
+                const itemType = hasTypeColumn ? cols[typeIndex]?.trim() : null;
+                const displayName = hasDisplayColumn ? cols[displayIndex]?.trim() : null;
+
+                if (!fullPath) continue;
+
+                // Convert to clean tier path
+                const cleanPath = pathToTierPath(fullPath);
+                allCleanPaths.add(cleanPath);
+
+                console.log(`Processing: "${fullPath}" | Type: ${itemType || 'AUTO-DETECT'}`);
+
+                let isEquipment = false;
+                let isPoint = false;
+
+                if (hasTypeColumn) {
+                    // Use type column for definitive classification
+                    isEquipment = itemType === 'Equipment';
+                    isPoint = itemType === 'Point';
+                    // Container types are skipped (neither equipment nor point)
+                } else {
+                    // Legacy detection for single-column CSV
+                    const afterSite = fullPath.split('/$site/')[1];
+                    if (!afterSite) continue;
+
+                    const segmentsAfterSite = afterSite.split('/');
+                    isPoint = segmentsAfterSite.length === 4;
+                    isEquipment = !isPoint;
+                }
+
+                console.log(`  -> ${isEquipment ? 'EQUIPMENT' : isPoint ? 'POINT' : 'CONTAINER (skipped)'}`);
+
+                if (isEquipment) {
+                    // This is an equipment row
+                    const pathSegments = cleanPath.split('/');
+                    const equipmentName = pathSegments[pathSegments.length - 1]; // Last segment is equipment
+
+                    currentEquipment = {
+                        name: equipmentName,
+                        displayName: displayName,
+                        path: fullPath, // Keep original path for reference
+                        cleanPath: cleanPath,
+                        points: []
+                    };
+
+                    equipmentMap.set(fullPath, currentEquipment);
+                    console.log(`  -> Stored equipment: "${equipmentName}" with cleanPath: "${cleanPath}"`);
+                } else if (isPoint && currentEquipment) {
+                    // This is a point row
+                    const pathSegments = cleanPath.split('/');
+                    const pointName = pathSegments[pathSegments.length - 1]; // Last segment is point name
+
+                    const point = {
+                        name: pointName,
+                        displayName: displayName,
+                        path: fullPath,
+                        cleanPath: cleanPath,
+                        equipmentPath: currentEquipment.path
+                    };
+
+                    points.set(fullPath, point);
+                    currentEquipment.points.push(point);
+                    console.log(`  -> Added point "${pointName}" to equipment "${currentEquipment.name}"`);
+                } else if (isPoint && !currentEquipment) {
+                    console.log(`  -> ERROR: Point found but no current equipment! Point path: ${fullPath}`);
+                }
+                // Containers are ignored (neither equipment nor point)
+            }
+
+            console.log('Found', equipmentMap.size, 'equipment and', points.size, 'points');
+
+            // Debug logging for equipment and paths
+            console.log('Equipment stored:');
+            equipmentMap.forEach((equipment, key) => {
+                console.log(`  ${equipment.name}: cleanPath="${equipment.cleanPath}", originalPath="${equipment.path}"`);
+            });
+
+            console.log('Sample clean paths generated:');
+            Array.from(allCleanPaths).slice(0, 10).forEach(path => {
+                console.log(`  ${path}`);
+            });
+
+            // Convert to arrays and sort
+            const devices = Array.from(equipmentMap.values());
+            devices.forEach(device => {
+                device.points.sort((a, b) => a.name.localeCompare(b.name));
+            });
+
+            // Find templates
+            const templates = findTemplates(devices);
+
+            // Detect Metasys configuration from CSV paths
+            const controllers = new Set();
+            const sites = new Set();
+
+            // Extract sites and controllers from devices for detection
+            devices.forEach(device => {
+                const path = device.path;
+                // Extract site (before /$site/)
+                const siteMatch = path.match(/^([^\/]+)\/\$site\//);
+                if (siteMatch) {
+                    sites.add(siteMatch[1]);
+                }
+
+                // Extract controller (after : in controller name)
+                const controllerMatch = path.match(/:([^\/]+)\//);
+                if (controllerMatch) {
+                    controllers.add(controllerMatch[1]);
+                }
+            });
+
+            const detectedSites = Array.from(sites);
+            const detectedControllers = Array.from(controllers);
+
+            // Update global detectedConfig for Metasys
+            window.detectedConfig = {
+                driverType: 'Metasys',
+                stationPrefix: detectedSites.length > 0 ? `${detectedSites[0]}:` : 'site:',
+                detectedDrivers: [`Metasys (${detectedControllers.length} controllers)`],
+                detectedSites: detectedSites,
+                detectedControllers: detectedControllers
+            };
+
+            // Build tree using clean paths
+            const tree = buildTree(Array.from(allCleanPaths), devices);
+
+            console.log('CSV Processing Results:', {
+                devices: devices.length,
+                points: points.size,
+                templates: templates.exact.length
+            });
+
+            return { devices, points, templates, tree, paths: Array.from(allCleanPaths), detectedConfig: window.detectedConfig };
+        }
+
+        function findTemplates(devices) {
+            const exact = [];
+            const used = new Set();
+            
+            devices.forEach(device => {
+                if (used.has(device.name)) return;
+                
+                const template = {
+                    points: device.points,
+                    devices: [device]
+                };
+                
+                used.add(device.name);
+                
+                devices.forEach(other => {
+                    if (used.has(other.name)) return;
+                    if (device.points.length !== other.points.length) return;
+                    
+                    const match = device.points.every((p, i) => 
+                        p.name === other.points[i].name
+                    );
+                    
+                    if (match) {
+                        template.devices.push(other);
+                        used.add(other.name);
+                    }
+                });
+                
+                exact.push(template);
+            });
+            
+            // Find partials
+            const partial = [];
+            exact.forEach((t1, i) => {
+                exact.forEach((t2, j) => {
+                    if (i >= j) return;
+                    
+                    const matching = t1.points.filter(p1 => 
+                        t2.points.some(p2 => p1.name === p2.name)
+                    ).length;
+                    
+                    const total = Math.max(t1.points.length, t2.points.length);
+                    const percent = Math.round((matching / total) * 100);
+                    
+                    if (percent >= 80 && percent < 100) {
+                        partial.push({ t1, t2, percent, matching, total });
+                    }
+                });
+            });
+            
+            return { exact, partial };
+        }
+        
+        function buildTree(cleanPaths, devices) {
+            const root = { name: 'Station', children: [] };
+
+            // Build tree structure from clean paths
+            cleanPaths.forEach(cleanPath => {
+                const parts = cleanPath.split('/').filter(p => p);
+                let current = root;
+
+                parts.forEach(part => {
+                    let child = current.children.find(c => c.name === part);
+                    if (!child) {
+                        child = { name: part, children: [] };
+                        current.children.push(child);
+                    }
+                    current = child;
+                });
+            });
+            
+            // Mark folders with equipment for Metasys structure
+            function markHasEquipment(node, currentCleanPath = '') {
+                const nodePath = currentCleanPath ? `${currentCleanPath}/${node.name}` : node.name;
+                let hasEquipment = false;
+
+                // Find equipment by matching clean paths
+                const device = devices.find(d => {
+                    return d.cleanPath === nodePath;
+                });
+
+                if (device) {
+                    hasEquipment = true;
+                    node.isDirectDevice = true;
+                }
+
+                // Check all children recursively
+                node.children.forEach(child => {
+                    if (markHasEquipment(child, nodePath)) {
+                        hasEquipment = true;
+                    }
+                });
+
+                // Set the flag on this node
+                if (hasEquipment) {
+                    node.hasEquipment = true;
+                }
+
+                return hasEquipment;
+            }
+            
+            markHasEquipment(root);
+            
+            return root;
+        }
+        
+        // Display functions
+        function updateDisplay() {
+            if (!appData) {
+                // Reset counters to 0 when no data
+                document.getElementById('deviceCount').textContent = '0';
+                document.getElementById('pointCount').textContent = '0';
+                document.getElementById('templateCount').textContent = '0';
+                document.getElementById('partialCount').textContent = '0';
+                return;
+            }
+
+            // Update stats (excluding excluded items)
+            const nonExcludedDevices = appData.devices.filter(device => !excludedItems.has(device.cleanPath));
+
+            // Handle both Map and array/object for points
+            let pointsArray = [];
+            if (appData.points && typeof appData.points.values === 'function') {
+                pointsArray = Array.from(appData.points.values());
+            } else if (appData.points && Array.isArray(appData.points)) {
+                pointsArray = appData.points;
+            }
+            const nonExcludedPoints = pointsArray.filter(point => point.cleanPath && !excludedItems.has(point.cleanPath));
+
+            document.getElementById('deviceCount').textContent = nonExcludedDevices.length;
+            document.getElementById('pointCount').textContent = nonExcludedPoints.length;
+            document.getElementById('templateCount').textContent = appData.templates.exact.length;
+            document.getElementById('partialCount').textContent = appData.templates.partial.length;
+
+
+            // Update views
+            updateTree();
+            updateTemplates();
+
+            // Update checkbox displays and counter
+            updateCheckedCounter();
+            updateCheckboxDisplay();
+
+            // Update comparison if active
+            if (comparisonActive) {
+                updateComparison();
+            }
+        }
+        
+        function updateTree() {
+            const container = document.getElementById('treeView');
+            container.innerHTML = '';
+
+            // For Metasys, render all top-level children (sites)
+            if (appData.tree && appData.tree.children) {
+                appData.tree.children.forEach(child => {
+                    renderNode(child, container, 0, '');
+                });
+            }
+        }
+        
+        function renderNode(node, container, level, cleanPath) {
+            const currentCleanPath = cleanPath ? `${cleanPath}/${node.name}` : node.name;
+            const device = appData.devices.find(d => d.cleanPath === currentCleanPath);
+
+            // Debug logging for equipment lookup
+            if (node.name.includes('01ACGM004') || (device && device.name.includes('01ACGM004'))) {
+                console.log(`Equipment lookup debug for ${node.name}:`);
+                console.log(`  currentCleanPath: "${currentCleanPath}"`);
+                console.log(`  device found: ${!!device}`);
+                if (device) {
+                    console.log(`  device cleanPath: "${device.cleanPath}"`);
+                    console.log(`  device name: "${device.name}"`);
+                }
+                console.log(`  Available devices:`, appData.devices.map(d => `${d.name}:"${d.cleanPath}"`));
+            }
+
+            const hasChildren = node.children && node.children.length > 0;
+
+            // Check if this node is a point (any leaf node)
+            const isActualPoint = !hasChildren;
+
+            const item = document.createElement('div');
+            item.className = 'tree-item';
+
+            // Mark equipment for styling but don't change behavior
+            if (device) {
+                item.classList.add('device');
+            }
+
+            // Check if this item is excluded
+            const isExcluded = excludedItems.has(currentCleanPath);
+            if (isExcluded) {
+                item.classList.add('excluded');
+            }
+
+            item.style.paddingLeft = `${level * 20}px`;
+
+            // Create the tree item content with expand button if has children
+            let itemContent = '';
+
+            if (hasChildren) {
+                itemContent += `<span class="expand-btn" data-path="${currentCleanPath}">+</span>`;
+            } else {
+                itemContent += `<span class="expand-spacer"></span>`;
+            }
+
+            // Add checkbox for equipment/devices only
+            if (device) {
+                const isChecked = checkedItems.has(currentCleanPath);
+                itemContent += `<input type="checkbox" class="device-checkbox" data-path="${currentCleanPath}"
+                               onclick="toggleDeviceCheck(event, '${currentCleanPath}')" ${isChecked ? 'checked' : ''}>`;
+            }
+
+            // Determine icon based on node type
+            let icon = '📂'; // Default folder icon
+            if (device) {
+                icon = '⚙️'; // Equipment icon
+            } else if (isActualPoint) {
+                icon = '•'; // Point icon
+            }
+
+            // Add icon and node name
+            if (isActualPoint) {
+                // For points, find the corresponding point object to get display name
+                let pointObject = null;
+                if (appData.points && typeof appData.points.values === 'function') {
+                    pointObject = Array.from(appData.points.values()).find(p => p.cleanPath === currentCleanPath);
+                } else if (appData.points && Array.isArray(appData.points)) {
+                    pointObject = appData.points.find(p => p.cleanPath === currentCleanPath);
+                }
+                const displayName = pointObject ? getDisplayName(pointObject) : node.name;
+                itemContent += `<span class="node-icon">${icon}</span><span class="node-name point">${displayName}</span>`;
+                item.className += ' point';
+            } else if (device) {
+                const displayName = getDisplayName(device);
+                itemContent += `<span class="node-icon">${icon}</span><span class="node-name"><strong>${displayName}</strong></span>`;
+            } else {
+                itemContent += `<span class="node-icon">${icon}</span><span class="node-name">${node.name}</span>`;
+            }
+
+            // Add toggle exclude button for containers and equipment (not individual points)
+            if (!isActualPoint) {
+                const buttonIcon = isExcluded ? '👁️' : '×';
+                const buttonTitle = isExcluded ? `Include ${node.name}` : `Exclude ${node.name}`;
+                itemContent += `<button class="delete-btn" onclick="toggleExcludeNode('${currentCleanPath}', '${node.name.replace(/'/g, "\\'")}'); event.stopPropagation();" title="${buttonTitle}">${buttonIcon}</button>`;
+            }
+
+            item.innerHTML = itemContent;
+
+            // Add click handler for node selection
+            item.onclick = (e) => {
+                // Don't select if clicking expand button
+                if (e.target.classList.contains('expand-btn')) {
+                    return;
+                }
+
+                // Remove previous selection
+                document.querySelectorAll('.tree-item.selected').forEach(el =>
+                    el.classList.remove('selected'));
+
+                // Select this item
+                item.classList.add('selected');
+
+                // Show details if this is equipment
+                if (device) {
+                    showDeviceDetail(device.path); // Use original path for device details
+                } else if (isActualPoint) {
+                    // For points, copy point name
+                    copyORD({name: node.name, path: currentCleanPath});
+                }
+            };
+
+            container.appendChild(item);
+
+            // Create child container if node has children
+            if (hasChildren) {
+                const childContainer = document.createElement('div');
+                childContainer.className = 'tree-children';
+                container.appendChild(childContainer);
+
+                // Add expand button handler
+                const expandBtn = item.querySelector('.expand-btn');
+                expandBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    const isOpen = childContainer.classList.contains('open');
+                    if (isOpen) {
+                        childContainer.classList.remove('open');
+                        expandBtn.textContent = '+';
+                    } else {
+                        childContainer.classList.add('open');
+                        expandBtn.textContent = '-';
+                    }
+                };
+
+                // Render all children
+                if (node.children && Array.isArray(node.children)) {
+                    node.children.forEach(child => {
+                        renderNode(child, childContainer, level + 1, currentCleanPath);
+                    });
+                }
+            }
+        }
+        
+        function updateTemplates() {
+            const container = document.getElementById('templatesView');
+            const sorted = [...appData.templates.exact].sort((a, b) => b.devices.length - a.devices.length);
+            
+            let html = `
+                <div class="summary-card">
+                    <h2>📋 Templates Report</h2>
+                    <div class="summary-stats">
+                        <div class="stat">
+                            <div class="stat-value">${sorted.length}</div>
+                            <div class="stat-label">Unique Templates</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">${appData.devices.length}</div>
+                            <div class="stat-label">Total Devices</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">${(appData.devices.length / sorted.length).toFixed(1)}</div>
+                            <div class="stat-label">Avg per Template</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            sorted.forEach((t, i) => {
+                const originalIndex = appData.templates.exact.indexOf(t);
+                const percent = ((t.devices.length / appData.devices.length) * 100).toFixed(1);
+
+                html += `
+                    <div class="template-card">
+                        <div class="template-header">
+                            <span class="template-title">Template ${originalIndex + 1}</span>
+                            <div class="template-controls">
+                                <button class="template-control-btn check-all" onclick="checkAllInTemplate(${i})" title="Check all devices in this template">✓ All</button>
+                                <button class="template-control-btn uncheck-all" onclick="uncheckAllInTemplate(${i})" title="Uncheck all devices in this template">✗ All</button>
+                            </div>
+                            <span class="template-count">${t.devices.length} devices (${percent}%)</span>
+                        </div>
+                        <div class="device-grid">
+                            ${t.devices.map(d => {
+                                const isChecked = checkedItems.has(d.cleanPath);
+                                return `<div class="device-item ${isChecked ? 'device-checked' : ''}" title="${d.ord || d.path}">
+                                    <input type="checkbox" class="device-checkbox" data-path="${d.cleanPath}"
+                                           onclick="toggleDeviceCheck(event, '${d.cleanPath}')" ${isChecked ? 'checked' : ''}>
+                                    ${getDisplayName(d)}
+                                </div>`;
+                            }).join('')}
+                        </div>
+                        <div class="points-summary">
+                            <div class="points-header">
+                                <strong>${t.points.length} Points:</strong>
+                                ${t.points.length > 8 ? `<button class="expand-points-btn" data-template="${i}" onclick="togglePoints(${i})">▶</button>` : ''}
+                            </div>
+                            <div class="points-preview" id="points-preview-${i}">
+                                ${t.points.slice(0, 8).map(p => getDisplayName(p)).join(', ')}
+                                ${t.points.length > 8 ? '...' : ''}
+                            </div>
+                            <div class="points-expanded" id="points-expanded-${i}" style="display: none;">
+                                ${t.points.map(p =>
+                                    `<div class="template-point-item" onclick="copyORD({name:'${p.name}', path:'${p.path}'})" title="Click to copy ORD">• ${getDisplayName(p)}</div>`
+                                ).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function togglePoints(templateIndex) {
+            const previewEl = document.getElementById(`points-preview-${templateIndex}`);
+            const expandedEl = document.getElementById(`points-expanded-${templateIndex}`);
+            const buttonEl = document.querySelector(`[data-template="${templateIndex}"]`);
+
+            if (expandedEl.style.display === 'none') {
+                // Expand
+                previewEl.style.display = 'none';
+                expandedEl.style.display = 'grid';
+                buttonEl.textContent = '▼';
+            } else {
+                // Collapse
+                previewEl.style.display = 'block';
+                expandedEl.style.display = 'none';
+                buttonEl.textContent = '▶';
+            }
+        }
+
+        function generateComparisonReport() {
+            if (!appData || !compareData) return;
+
+            const primary = appData.devices;
+            const secondary = compareData.devices;
+
+            // Create device maps for easy lookup
+            const primaryMap = new Map(primary.map(d => [d.path, d]));
+            const secondaryMap = new Map(secondary.map(d => [d.path, d]));
+
+            // Find differences
+            const onlyInPrimary = primary.filter(d => !secondaryMap.has(d.path));
+            const onlyInSecondary = secondary.filter(d => !primaryMap.has(d.path));
+            const inBoth = primary.filter(d => secondaryMap.has(d.path));
+
+            // Analyze point differences for common equipment
+            const pointDifferences = [];
+            inBoth.forEach(primaryDevice => {
+                const secondaryDevice = secondaryMap.get(primaryDevice.path);
+                const primaryPoints = new Set(primaryDevice.points.map(p => p.name));
+                const secondaryPoints = new Set(secondaryDevice.points.map(p => p.name));
+
+                const missingInSecondary = primaryDevice.points.filter(p => !secondaryPoints.has(p.name));
+                const missingInPrimary = secondaryDevice.points.filter(p => !primaryPoints.has(p.name));
+
+                if (missingInSecondary.length > 0 || missingInPrimary.length > 0) {
+                    pointDifferences.push({
+                        device: primaryDevice,
+                        missingInSecondary,
+                        missingInPrimary
+                    });
+                }
+            });
+
+            return {
+                onlyInPrimary,
+                onlyInSecondary,
+                inBoth,
+                pointDifferences,
+                primaryName: document.getElementById('fileName').textContent,
+                secondaryName: document.getElementById('compareFileName').textContent
+            };
+        }
+
+        function updateComparison() {
+            const container = document.getElementById('comparisonView');
+            const comparison = generateComparisonReport();
+
+            if (!comparison) {
+                container.innerHTML = '<p>No comparison data available</p>';
+                return;
+            }
+
+            let html = `
+                <div class="summary-card">
+                    <h2>🔍 CSV Comparison Report</h2>
+                    <div style="margin-top: 15px; font-size: 14px;">
+                        <div><strong>Primary:</strong> ${comparison.primaryName}</div>
+                        <div><strong>Compare:</strong> ${comparison.secondaryName}</div>
+                    </div>
+                    <div class="summary-stats">
+                        <div class="stat">
+                            <div class="stat-value">${comparison.onlyInPrimary.length}</div>
+                            <div class="stat-label">Only in Primary</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">${comparison.onlyInSecondary.length}</div>
+                            <div class="stat-label">Only in Compare</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">${comparison.inBoth.length}</div>
+                            <div class="stat-label">In Both</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">${comparison.pointDifferences.length}</div>
+                            <div class="stat-label">Point Differences</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Only in Primary
+            if (comparison.onlyInPrimary.length > 0) {
+                html += `
+                    <div class="template-card">
+                        <div class="template-header">
+                            <span class="template-title">Equipment Only in Primary</span>
+                            <span class="template-count">${comparison.onlyInPrimary.length} devices</span>
+                        </div>
+                        <div class="device-grid">
+                            ${comparison.onlyInPrimary.map(d => `<div class="device-item" style="border-left-color: #e74c3c;">${d.name} (${d.points.length} points)</div>`).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Only in Secondary
+            if (comparison.onlyInSecondary.length > 0) {
+                html += `
+                    <div class="template-card">
+                        <div class="template-header">
+                            <span class="template-title">Equipment Only in Compare</span>
+                            <span class="template-count">${comparison.onlyInSecondary.length} devices</span>
+                        </div>
+                        <div class="device-grid">
+                            ${comparison.onlyInSecondary.map(d => `<div class="device-item" style="border-left-color: #27ae60;">${d.name} (${d.points.length} points)</div>`).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Point Differences
+            if (comparison.pointDifferences.length > 0) {
+                html += `
+                    <div class="template-card">
+                        <div class="template-header">
+                            <span class="template-title">Equipment with Point Differences</span>
+                            <span class="template-count">${comparison.pointDifferences.length} devices</span>
+                        </div>
+                `;
+
+                comparison.pointDifferences.forEach(diff => {
+                    html += `
+                        <div style="margin: 16px 0; padding: 12px; background: #f8f9fa; border-radius: 6px; border-left: 4px solid #f39c12;">
+                            <div style="font-weight: 600; margin-bottom: 8px;">${diff.device.name}</div>
+
+                            ${diff.missingInSecondary.length > 0 ? `
+                                <div style="margin: 8px 0;">
+                                    <div style="font-size: 12px; font-weight: 500; color: #e74c3c; margin-bottom: 4px;">
+                                        Missing in Compare (${diff.missingInSecondary.length}):
+                                    </div>
+                                    <div style="font-size: 11px; color: #666;">
+                                        ${diff.missingInSecondary.map(p => p.name).join(', ')}
+                                    </div>
+                                </div>
+                            ` : ''}
+
+                            ${diff.missingInPrimary.length > 0 ? `
+                                <div style="margin: 8px 0;">
+                                    <div style="font-size: 12px; font-weight: 500; color: #27ae60; margin-bottom: 4px;">
+                                        Missing in Primary (${diff.missingInPrimary.length}):
+                                    </div>
+                                    <div style="font-size: 11px; color: #666;">
+                                        ${diff.missingInPrimary.map(p => p.name).join(', ')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                });
+
+                html += `</div>`;
+            }
+
+            container.innerHTML = html;
+        }
+        
+        // ORD Translation Engine for Metasys
+        class ORDTranslator {
+            constructor(config = {}) {
+                this.driverType = config.driverType || 'Metasys';
+                this.stationPrefix = config.stationPrefix || 'site:';
+                this.serverUrl = config.serverUrl || '{server}';
+            }
+
+            translate(csvPath, pointName = null) {
+                const clean = this.cleanPath(csvPath);
+                const isPoint = pointName !== null;
+                const fullPath = isPoint ? `${clean}/${pointName}` : clean;
+
+                return {
+                    csvPath: csvPath,
+                    cleanPath: clean,
+                    ord: this.toORD(fullPath),
+                    obixPath: this.toObixPath(fullPath),
+                    obixValueUrl: this.toObixValueUrl(fullPath),
+                    foxUrl: this.toFoxUrl(fullPath),
+                    isPoint: isPoint
+                };
+            }
+
+            cleanPath(path) {
+                // For Metasys, remove site prefix and clean up the path
+                let clean = path;
+
+                // Remove site prefix (everything before /$site/)
+                clean = clean.replace(/^[^\/]+\/\$site\//, '');
+
+                // Clean up controller notation (keep only the part after colon)
+                clean = clean.replace(/([^:]+):([^\/]+)/, '$2');
+
+                // Remove duplicate equipment names in path segments
+                const parts = clean.split('/');
+                const cleanedParts = [];
+                for (let i = 0; i < parts.length; i++) {
+                    if (i === 0 || parts[i] !== parts[i-1]) {
+                        cleanedParts.push(parts[i]);
+                    }
+                }
+                clean = cleanedParts.join('/');
+
+                // Handle point notation (equipment.point)
+                if (clean.includes('.')) {
+                    const lastSlash = clean.lastIndexOf('/');
+                    const pointPart = clean.substring(lastSlash + 1);
+                    if (pointPart.includes('.')) {
+                        const [equipment, point] = pointPart.split('.');
+                        clean = clean.substring(0, lastSlash + 1) + point;
+                    }
+                }
+
+                return clean;
+            }
+
+            toORD(path) {
+                // Generate Metasys-style ORD
+                return `${this.stationPrefix}|slot:${path}`;
+            }
+
+            toObixPath(path) {
+                const ord = this.toORD(path);
+                return ord.replace(`${this.stationPrefix}|slot:`, '/obix/config');
+            }
+
+            toObixValueUrl(path) {
+                const obixPath = this.toObixPath(path);
+                return `${obixPath}/out/value`;
+            }
+
+            toFoxUrl(path) {
+                const ord = this.toORD(path);
+                return ord.replace(`${this.stationPrefix}|slot:`, `fox://${this.stationPrefix.replace(':', '')}`);
+            }
+        }
+
+        // Global ORD translator instance
+        let ordTranslator = new ORDTranslator();
+        let detectedConfig = {
+            driverType: 'Metasys',
+            stationPrefix: 'site:',
+            detectedDrivers: ['Metasys']
+        };
+
+        // Auto-detect driver types from CSV content
+
+        // JSON Export functionality
+        function generateFullExport() {
+            if (!appData) {
+                showToast('No data to export');
+                return;
+            }
+
+            const exportData = {
+                metadata: {
+                    exportVersion: "2.0",
+                    exportDate: new Date().toISOString(),
+                    sourceFile: document.getElementById('fileName').textContent,
+                    stationInfo: {
+                        detectedFormat: "auto-detected",
+                        driverType: detectedConfig.driverType,
+                        detectedDrivers: detectedConfig.detectedDrivers,
+                        pointCount: appData.points.size,
+                        equipmentCount: appData.devices.length
+                    }
+                },
+                hierarchy: generateHierarchy(),
+                templates: generateTemplatesExport(),
+                apiConfig: {
+                    recommended: "obix",
+                    endpoints: {
+                        obix: `{server}/obix`,
+                        fox: `{server}:4911`,
+                        rest: `{server}/api`
+                    }
+                }
+            };
+
+            return exportData;
+        }
+
+        function generateHierarchy() {
+            const systems = new Map();
+
+            appData.devices.forEach(device => {
+                const pathParts = device.path.split('/').filter(p => p);
+
+                // Extract system info from path
+                const systemName = pathParts.length >= 3 ? pathParts[2] : 'Unknown';
+
+                if (!systems.has(systemName)) {
+                    systems.set(systemName, {
+                        name: systemName,
+                        path: `/${pathParts.slice(0, 3).join('/')}`,
+                        equipment: []
+                    });
+                }
+
+                // Generate equipment entry with all translation formats
+                const deviceTranslation = ordTranslator.translate(device.path);
+
+                const equipmentEntry = {
+                    id: device.name.toLowerCase().replace(/[^a-z0-9]/g, '_'),
+                    name: device.name,
+                    displayName: device.name,
+                    type: detectEquipmentType(device.name),
+                    template: findTemplateId(device),
+                    paths: {
+                        csv: device.path,
+                        ord: deviceTranslation.ord,
+                        obix: deviceTranslation.obixPath,
+                        fox: deviceTranslation.foxUrl
+                    },
+                    points: device.points.map(point => {
+                        const pointTranslation = ordTranslator.translate(device.path, point.name);
+                        return {
+                            id: `${device.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}_${point.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}`,
+                            name: point.name,
+                            displayName: point.name,
+                            paths: {
+                                csv: point.path,
+                                ord: pointTranslation.ord,
+                                obix: pointTranslation.obixPath,
+                                obixValue: pointTranslation.obixValueUrl
+                            },
+                            metadata: {
+                                unit: detectUnit(point.name),
+                                precision: 1,
+                                writable: detectWritable(point.name)
+                            }
+                        };
+                    })
+                };
+
+                systems.get(systemName).equipment.push(equipmentEntry);
+            });
+
+            return {
+                building: "Station",
+                systems: Array.from(systems.values())
+            };
+        }
+
+        function generateTemplatesExport() {
+            return appData.templates.exact.map((template, index) => ({
+                id: `template_${index + 1}`,
+                name: `Template ${index + 1}`,
+                pointSignatures: template.points.map(p => p.name),
+                instanceCount: template.devices.length,
+                instances: template.devices.map(d => d.name)
+            }));
+        }
+
+        function detectEquipmentType(name) {
+            const name_lower = name.toLowerCase();
+            if (name_lower.includes('ahu')) return 'AHU';
+            if (name_lower.includes('vav')) return 'VAV';
+            if (name_lower.includes('chiller')) return 'Chiller';
+            if (name_lower.includes('boiler')) return 'Boiler';
+            if (name_lower.includes('pump')) return 'Pump';
+            if (name_lower.includes('fan')) return 'Fan';
+            return 'Generic';
+        }
+
+        function detectUnit(pointName) {
+            const name_lower = pointName.toLowerCase();
+            if (name_lower.includes('temp')) return '°F';
+            if (name_lower.includes('pressure')) return 'PSI';
+            if (name_lower.includes('humidity')) return '%RH';
+            if (name_lower.includes('flow')) return 'CFM';
+            if (name_lower.includes('position') || name_lower.includes('damper')) return '%';
+            return '';
+        }
+
+        function detectWritable(pointName) {
+            const name_lower = pointName.toLowerCase();
+            return name_lower.includes('setpoint') ||
+                   name_lower.includes('command') ||
+                   name_lower.includes('override') ||
+                   name_lower.includes('position');
+        }
+
+        function findTemplateId(device) {
+            const templateIndex = appData.templates.exact.findIndex(t =>
+                t.devices.some(d => d.path === device.path)
+            );
+            return templateIndex >= 0 ? `template_${templateIndex + 1}` : null;
+        }
+
+        function downloadJSON() {
+            const exportData = generateFullExport();
+            const json = JSON.stringify(exportData, null, 2);
+
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `metasys_export_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showToast('JSON export downloaded');
+        }
+
+        function copyJSONToClipboard() {
+            const exportData = generateFullExport();
+            const json = JSON.stringify(exportData, null, 2);
+
+            const textarea = document.createElement('textarea');
+            textarea.value = json;
+            textarea.style.position = 'absolute';
+            textarea.style.left = '-9999px';
+            document.body.appendChild(textarea);
+            textarea.select();
+
+            try {
+                document.execCommand('copy');
+                showToast('JSON copied to clipboard');
+            } catch (err) {
+                showToast('Copy failed');
+            }
+
+            document.body.removeChild(textarea);
+        }
+
+
+
+
+
+
+        // Interaction functions
+        function copyORD(point) {
+            // For Metasys, just copy the point name
+            const pointName = point.name;
+
+            // Create textarea, select, copy, remove
+            const textarea = document.createElement('textarea');
+            textarea.value = pointName;
+            textarea.style.position = 'absolute';
+            textarea.style.left = '-9999px';
+            document.body.appendChild(textarea);
+            textarea.select();
+
+            try {
+                document.execCommand('copy');
+                showToast(`Copied: ${pointName}`);
+            } catch (err) {
+                showToast('Copy failed');
+            }
+
+            document.body.removeChild(textarea);
+        }
+
+        // Helper function for copying points from detail panel
+        function copyPointFromDetail(pointName, devicePath) {
+            const point = {
+                name: pointName,
+                path: `${devicePath}/${pointName}`
+            };
+            copyORD(point);
+        }
+        
+        function showDeviceDetail(path) {
+            const device = appData.devices.find(d => d.path === path);
+            if (!device) return;
+            
+            const template = appData.templates.exact.find(t => 
+                t.devices.some(d => d.path === path)
+            );
+            
+            const partials = appData.templates.partial.filter(p => 
+                p.t1 === template || p.t2 === template
+            );
+            
+            let html = `
+                <div class="detail-header">
+                    <h3>⚙️ ${device.name}</h3>
+                    <div style="font-size: 12px; opacity: 0.9;">${device.path}</div>
+                </div>
+            `;
+            
+            if (template) {
+                const idx = appData.templates.exact.indexOf(template) + 1;
+                html += `
+                    <div class="detail-section">
+                        <h4>Template ${idx}</h4>
+                        <div>${template.devices.length} devices (click to navigate):</div>
+                        ${template.devices.map(d => 
+                            `<div class="device-link ${d.path === path ? 'current' : ''}" 
+                                 onclick="showDeviceDetail('${d.path}')"
+                                 style="background: ${d.path === path ? '#3498db' : '#f8f9fa'}; 
+                                        color: ${d.path === path ? 'white' : 'inherit'};">
+                                ${d.name}
+                            </div>`
+                        ).join('')}
+                    </div>
+                    
+                    <div class="detail-section">
+                        <h4>Points (${template.points.length}) - Click to copy</h4>
+                        ${template.points.map(p =>
+                            `<div class="detail-point"
+                                  onclick="copyPointFromDetail('${p.name.replace(/'/g, "\\'")}', '${device.path}')"
+                                  title="Click to copy: ${p.name}">
+                                ${p.name}
+                            </div>`
+                        ).join('')}
+                    </div>
+                `;
+                
+                if (partials.length > 0) {
+                    html += `
+                        <div class="detail-section">
+                            <h4>Partial Matches</h4>
+                            ${partials.map(p => {
+                                const other = p.t1 === template ? p.t2 : p.t1;
+                                const otherIdx = appData.templates.exact.indexOf(other) + 1;
+                                
+                                // Find differences
+                                const mainPoints = template.points;
+                                const otherPoints = other.points;
+                                
+                                const missing = mainPoints.filter(mp => 
+                                    !otherPoints.some(op => op.name === mp.name)
+                                );
+                                
+                                const extra = otherPoints.filter(op => 
+                                    !mainPoints.some(mp => mp.name === op.name)
+                                );
+                                
+                                return `
+                                    <div style="padding: 8px; margin: 8px 0; background: white; border-radius: 4px; border: 1px solid #dee2e6;">
+                                        <div style="font-weight: bold; color: #2c3e50;">Template ${otherIdx}: ${p.percent}% match</div>
+                                        <div style="font-size: 11px; color: #6c757d; margin: 4px 0;">${p.matching} of ${p.total} points match</div>
+                                        
+                                        <div style="margin-top: 8px; font-size: 11px; color: #6c757d;">
+                                            <strong>Devices (${other.devices.length}):</strong>
+                                            ${other.devices.slice(0, 3).map(d => d.name).join(', ')}${other.devices.length > 3 ? '...' : ''}
+                                        </div>
+                                        
+                                        ${missing.length > 0 ? `
+                                            <div style="margin-top: 8px;">
+                                                <div style="font-size: 11px; font-weight: bold; color: #c62828;">Missing from Template ${otherIdx}:</div>
+                                                ${missing.map(m => 
+                                                    `<div class="diff-point missing">• ${m.name}</div>`
+                                                ).join('')}
+                                            </div>
+                                        ` : ''}
+                                        
+                                        ${extra.length > 0 ? `
+                                            <div style="margin-top: 8px;">
+                                                <div style="font-size: 11px; font-weight: bold; color: #2e7d32;">Extra in Template ${otherIdx}:</div>
+                                                ${extra.map(e => 
+                                                    `<div class="diff-point extra">• ${e.name}</div>`
+                                                ).join('')}
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    `;
+                }
+            }
+            
+            document.getElementById('detailPanel').innerHTML = html;
+            document.getElementById('detailPanel').classList.add('show');
+        }
+        
+        function showView(view) {
+            currentView = view;
+            document.querySelectorAll('.toolbar .btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Hide all views first
+            document.getElementById('treeView').style.display = 'none';
+            document.getElementById('templatesView').style.display = 'none';
+            document.getElementById('comparisonView').style.display = 'none';
+            document.getElementById('definitionView').style.display = 'none';
+
+            // Show selected view
+            if (view === 'tree') {
+                document.getElementById('treeView').style.display = 'block';
+            } else if (view === 'templates') {
+                document.getElementById('templatesView').style.display = 'block';
+                closeDetail();
+            } else if (view === 'comparison') {
+                document.getElementById('comparisonView').style.display = 'block';
+                closeDetail();
+                if (comparisonActive) {
+                    updateComparison();
+                }
+            } else if (view === 'definition') {
+                document.getElementById('definitionView').style.display = 'block';
+                closeDetail();
+                initializeDefinitionBuilder();
+            }
+        }
+        
+        function expandAll() {
+            document.querySelectorAll('.tree-children').forEach(el => {
+                el.classList.add('open');
+            });
+        }
+        
+        function collapseAll() {
+            document.querySelectorAll('.tree-children').forEach(el => {
+                el.classList.remove('open');
+            });
+        }
+        
+        function closeDetail() {
+            document.getElementById('detailPanel').classList.remove('show');
+        }
+        
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        // Definition Builder Functions
+        let selectedTemplate = null;
+        let selectedPartialMatches = new Set();
+        let definitionListenersSetup = false;
+
+        function initializeDefinitionBuilder() {
+            if (!appData || !appData.templates) return;
+
+            populateTemplateDropdown();
+            setupDefinitionEventListeners();
+        }
+
+        function populateTemplateDropdown() {
+            const select = document.getElementById('definitionTemplateSelect');
+            const sorted = [...appData.templates.exact].sort((a, b) => b.devices.length - a.devices.length);
+
+            // Clear existing options except the first one
+            select.innerHTML = '<option value="">Choose a template...</option>';
+
+            sorted.forEach((template, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                // Use original template number (consistent with Templates tab)
+                const originalTemplateNumber = appData.templates.exact.indexOf(template) + 1;
+                option.textContent = `Template ${originalTemplateNumber} (${template.devices.length} devices, ${template.points.length} points)`;
+                select.appendChild(option);
+            });
+        }
+
+        function setupDefinitionEventListeners() {
+            if (definitionListenersSetup) return; // Prevent duplicate listeners
+
+            const templateSelect = document.getElementById('definitionTemplateSelect');
+            const definitionName = document.getElementById('definitionName');
+            const exportXMLBtn = document.getElementById('exportXMLBtn');
+            const exportCSVBtn = document.getElementById('exportCSVBtn');
+
+            templateSelect.addEventListener('change', onTemplateSelected);
+            definitionName.addEventListener('input', function() {
+                updateExportButtons();
+                saveToLocalStorage();
+            });
+            exportXMLBtn.addEventListener('click', exportDefinitionXML);
+            exportCSVBtn.addEventListener('click', exportDefinitionCSV);
+
+            definitionListenersSetup = true;
+        }
+
+        function onTemplateSelected() {
+            const select = document.getElementById('definitionTemplateSelect');
+            const templateIndex = parseInt(select.value);
+
+            // Clear any previously selected partial matches
+            selectedPartialMatches.clear();
+
+            if (isNaN(templateIndex)) {
+                selectedTemplate = null;
+                document.getElementById('templatePreview').style.display = 'none';
+                document.getElementById('partialMatchesSection').style.display = 'none';
+                updateExportButtons();
+                return;
+            }
+
+            const sorted = [...appData.templates.exact].sort((a, b) => b.devices.length - a.devices.length);
+            selectedTemplate = sorted[templateIndex];
+
+            displayTemplatePreview();
+            displayPartialMatches();
+            updateExportButtons();
+
+            // Auto-save after template selection
+            saveToLocalStorage();
+        }
+
+        function displayTemplatePreview() {
+            const preview = document.getElementById('templatePreview');
+
+            if (!selectedTemplate) {
+                preview.style.display = 'none';
+                return;
+            }
+
+            let html = `
+                <h4>Template Details</h4>
+                <p><strong>Devices:</strong> ${selectedTemplate.devices.length}</p>
+                <p><strong>Points:</strong> ${selectedTemplate.points.length}</p>
+                <div><strong>Point List:</strong></div>
+                <div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px;">
+            `;
+
+            selectedTemplate.points.forEach(point => {
+                html += `<span style="background: var(--accent-color); color: white; padding: 2px 6px; border-radius: 3px; font-size: 12px;">${point.name}</span>`;
+            });
+
+            html += '</div>';
+            preview.innerHTML = html;
+            preview.style.display = 'block';
+        }
+
+        function displayPartialMatches() {
+            const section = document.getElementById('partialMatchesSection');
+            const container = document.getElementById('partialMatchesList');
+
+            if (!selectedTemplate) {
+                section.style.display = 'none';
+                return;
+            }
+
+            // Find partial matches for this template
+            const partials = appData.templates.partial.filter(p =>
+                p.t1 === selectedTemplate || p.t2 === selectedTemplate
+            );
+
+            if (partials.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+
+            let html = '';
+            const sortedTemplates = [...appData.templates.exact].sort((a, b) => b.devices.length - a.devices.length);
+
+            partials.forEach((partial, index) => {
+                const otherTemplate = partial.t1 === selectedTemplate ? partial.t2 : partial.t1;
+                const matchId = `partial_${index}`;
+
+                // Find the template number for this partial match (consistent with Templates tab)
+                const templateNumber = appData.templates.exact.indexOf(otherTemplate) + 1;
+
+                html += `
+                    <div class="partial-match-item">
+                        <div class="partial-match-info">
+                            <div>
+                                <strong>Template ${templateNumber} with ${otherTemplate.devices.length} devices</strong>
+                                <span class="partial-match-similarity">(${partial.percent}% match)</span>
+                            </div>
+                            <div style="font-size: 12px; color: var(--text-secondary);">
+                                ${partial.matching}/${partial.total} points match
+                            </div>
+                        </div>
+                        <label>
+                            <input type="checkbox" id="${matchId}" data-template-index="${index}"> Include
+                        </label>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            section.style.display = 'block';
+
+            // Add event listeners for checkboxes
+            partials.forEach((partial, index) => {
+                const checkbox = document.getElementById(`partial_${index}`);
+                checkbox.addEventListener('change', onPartialMatchToggle);
+            });
+        }
+
+        function onPartialMatchToggle(event) {
+            const templateIndex = parseInt(event.target.dataset.templateIndex);
+
+            if (event.target.checked) {
+                selectedPartialMatches.add(templateIndex);
+            } else {
+                selectedPartialMatches.delete(templateIndex);
+            }
+
+            updateExportButtons();
+        }
+
+        function updateExportButtons() {
+            const exportXMLBtn = document.getElementById('exportXMLBtn');
+            const exportCSVBtn = document.getElementById('exportCSVBtn');
+            const definitionName = document.getElementById('definitionName').value.trim();
+
+            const shouldEnable = selectedTemplate && definitionName;
+            exportXMLBtn.disabled = !shouldEnable;
+            exportCSVBtn.disabled = !shouldEnable;
+        }
+
+        function getDefinitionPoints() {
+            if (!selectedTemplate) return [];
+
+            // Start with all points from selected base template
+            const allPoints = [...selectedTemplate.points];
+            console.log(`Base template points: ${allPoints.map(p => p.name).join(', ')}`);
+
+            // Add only NEW points from selected partial matches (no duplicates)
+            const partials = appData.templates.partial.filter(p =>
+                p.t1 === selectedTemplate || p.t2 === selectedTemplate
+            );
+
+            selectedPartialMatches.forEach(partialIndex => {
+                const partial = partials[partialIndex];
+                const otherTemplate = partial.t1 === selectedTemplate ? partial.t2 : partial.t1;
+                console.log(`Adding from partial template with ${otherTemplate.points.length} points`);
+
+                // Only add points that don't already exist in the base template
+                otherTemplate.points.forEach(point => {
+                    if (!allPoints.some(existing => existing.name === point.name)) {
+                        console.log(`Adding new point: ${point.name}`);
+                        allPoints.push(point);
+                    } else {
+                        console.log(`Skipping duplicate point: ${point.name}`);
+                    }
+                });
+            });
+
+            // Sort points alphabetically
+            allPoints.sort((a, b) => a.name.localeCompare(b.name));
+
+            console.log(`Final unique points (${allPoints.length}): ${allPoints.map(p => p.name).join(', ')}`);
+            return allPoints;
+        }
+
+        function exportDefinitionXML() {
+            if (!selectedTemplate) return;
+
+            const definitionName = document.getElementById('definitionName').value.trim();
+            const useDisplayNames = document.getElementById('useDisplayNamesInShort').checked;
+
+            if (!definitionName) return;
+
+            const allPoints = getDefinitionPoints();
+            const xml = generateDefinitionXML(definitionName, allPoints, useDisplayNames);
+            downloadXML(xml, `${definitionName}.xml`);
+        }
+
+        function exportDefinitionCSV() {
+            if (!selectedTemplate) return;
+
+            const definitionName = document.getElementById('definitionName').value.trim();
+
+            if (!definitionName) return;
+
+            const allPoints = getDefinitionPoints();
+            const csv = generateDefinitionCSV(allPoints);
+            downloadCSV(csv, `${definitionName}_points.csv`);
+        }
+
+        function generateDefinitionXML(definitionName, points, useDisplayNames) {
+            let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
+            xml += `<viewData><object classVersion="2.0" classid="807" ref="CJAXMETASYS:CJAXMETASYS/definitions.${definitionName}">`;
+
+            // Property 4561 - Enum list (required for equipment definitions)
+            xml += `<property c="true" id="4561" status="0" w="true"><data><uniqueProp category="0"><listofProp type="enum"><uniqueProp category="0"><enumProp set="509" size="65535"/></uniqueProp></listofProp></uniqueProp><listof>`;
+            for (let i = 7000; i < 7000 + points.length; i++) {
+                xml += `<enum xmlns:ns${i - 6999}="http://www.w3.org/2001/XMLSchema-instance">${i}</enum>`;
+            }
+            xml += `</listof></data></property>`;
+
+            // Property 4560 - Main point definitions (this was in our original code)
+            xml += `<property c="true" id="4560" status="0" w="true"><data><uniqueProp category="85"><listofProp limit="500" type="struct"><uniqueProp category="0"><structProp><structElementProp id="10" type="string"><uniqueProp category="0"><stringProp size="128"/></uniqueProp></structElementProp><structElementProp id="470" type="string"><uniqueProp category="0"><stringProp size="32"/></uniqueProp></structElementProp><structElementProp id="472" type="string"><uniqueProp category="0"><stringProp size="256"/></uniqueProp></structElementProp><structElementProp id="225" type="enum"><uniqueProp category="0"><enumProp set="509" size="65535"/></uniqueProp></structElementProp><structElementProp id="5" type="string"><uniqueProp category="0"><stringProp size="400"/></uniqueProp></structElementProp><structElementProp id="117" type="unsignedShort"/><structElementProp id="116" type="enum"><uniqueProp category="0"><enumProp set="23"/></uniqueProp></structElementProp><structElementProp id="471" type="string"><uniqueProp category="0"><stringProp size="400"/></uniqueProp></structElementProp></structProp></uniqueProp></listofProp></uniqueProp><listof>`;
+
+            let nsCounter = points.length + 1; // Start after the enum namespace numbers (1 to points.length)
+            points.forEach(point => {
+                const label = getDisplayName(point); // Use display name for label
+                const shortName = useDisplayNames ? getDisplayName(point) : point.name; // Toggle for short name
+                const searchCriteria = `*${point.name}*`; // Wildcard search pattern
+
+                xml += `<struct>`;
+                xml += `<structElement><string xmlns:ns${nsCounter}="http://www.w3.org/2001/XMLSchema-instance">${label}</string></structElement>`;
+                xml += `<structElement><string xmlns:ns${nsCounter + 1}="http://www.w3.org/2001/XMLSchema-instance">${shortName}</string></structElement>`;
+                xml += `<structElement><string xmlns:ns${nsCounter + 2}="http://www.w3.org/2001/XMLSchema-instance"/></structElement>`;
+                xml += `<structElement><enum xmlns:ns${nsCounter + 3}="http://www.w3.org/2001/XMLSchema-instance">85</enum></structElement>`;
+                xml += `<structElement><string xmlns:ns${nsCounter + 4}="http://www.w3.org/2001/XMLSchema-instance"/></structElement>`;
+                xml += `<structElement><unsignedShort xmlns:ns${nsCounter + 5}="http://www.w3.org/2001/XMLSchema-instance">0</unsignedShort></structElement>`;
+                xml += `<structElement><enum xmlns:ns${nsCounter + 6}="http://www.w3.org/2001/XMLSchema-instance">1</enum></structElement>`;
+                xml += `<structElement><string xmlns:ns${nsCounter + 7}="http://www.w3.org/2001/XMLSchema-instance">${searchCriteria}</string></structElement>`;
+                xml += `</struct>`;
+
+                nsCounter += 8;
+            });
+            xml += `</listof></data></property>`;
+
+            // Property 32581 - Graphics reference (optional, using placeholder)
+            xml += `<property c="true" id="32581" n="true" status="0" w="true"><data><uniqueProp category="0"><listofProp limit="1" type="objref"><uniqueProp category="0"><objrefProp propertyFilter="0"><class id="844"/></objrefProp></uniqueProp></listofProp></uniqueProp><listof><objref itemName="${definitionName}" xmlns:ns${nsCounter}="http://www.w3.org/2001/XMLSchema-instance">CJAXMETASYS:CJAXMETASYS/$FacilityGraphics.00001.${Date.now()}</objref></listof></data></property>`;
+
+            // Property 12168 - Equipment category
+            xml += `<property c="true" id="12168" status="0" w="true"><data><uniqueProp category="0"><enumProp set="1765" setPropId="12169" size="30"/></uniqueProp><enum set="1765" text="HVAC - Other" xmlns:ns${nsCounter + 1}="http://www.w3.org/2001/XMLSchema-instance">99</enum></data></property>`;
+
+            // Property 908 - System category
+            xml += `<property c="true" id="908" status="0" w="true"><data><uniqueProp category="45"><enumProp set="33" size="250"/></uniqueProp><enum set="33" text="HVAC" xmlns:ns${nsCounter + 2}="http://www.w3.org/2001/XMLSchema-instance">0</enum></data></property>`;
+
+            // Property 28 - Nullable string
+            xml += `<property c="true" id="28" n="true" status="0" w="true"><data><uniqueProp category="0"><stringProp size="255"/></uniqueProp><string ns${nsCounter + 3}:nil="1" xmlns:ns${nsCounter + 3}="http://www.w3.org/2001/XMLSchema-instance"/></data></property>`;
+
+            // Property 2390 - Definition name
+            xml += `<property c="true" id="2390" status="0" w="true"><data><uniqueProp category="32"><stringProp size="400"/></uniqueProp><string xmlns:ns${nsCounter + 4}="http://www.w3.org/2001/XMLSchema-instance">${definitionName}</string></data></property>`;
+
+            // Property 32527 - Full reference path
+            xml += `<property c="true" id="32527" status="0"><data><uniqueProp category="11"><stringProp size="731"/></uniqueProp><string xmlns:ns${nsCounter + 5}="http://www.w3.org/2001/XMLSchema-instance">CJAXMETASYS:CJAXMETASYS/definitions.${definitionName}</string></data></property>`;
+
+            xml += `</object></viewData>`;
+            return xml;
+        }
+
+        function downloadXML(xmlContent, filename) {
+            const blob = new Blob([xmlContent], { type: 'application/xml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showToast(`Exported ${filename} successfully!`);
+        }
+
+        function generateDefinitionCSV(points) {
+            // Extract unique equipment from the selected templates
+            const equipmentSet = new Set();
+
+            // Add equipment from base template
+            if (selectedTemplate && selectedTemplate.devices) {
+                selectedTemplate.devices.forEach(device => {
+                    equipmentSet.add(device.name);
+                });
+            }
+
+            // Add equipment from partial matches
+            const partials = appData.templates.partial.filter(p =>
+                p.t1 === selectedTemplate || p.t2 === selectedTemplate
+            );
+
+            selectedPartialMatches.forEach(partialIndex => {
+                const partial = partials[partialIndex];
+                const otherTemplate = partial.t1 === selectedTemplate ? partial.t2 : partial.t1;
+
+                if (otherTemplate && otherTemplate.devices) {
+                    otherTemplate.devices.forEach(device => {
+                        equipmentSet.add(device.name);
+                    });
+                }
+            });
+
+            // Convert to sorted array and generate CSV
+            const equipmentList = Array.from(equipmentSet).sort();
+
+            let csv = 'Equipment Name\n';
+            equipmentList.forEach(equipment => {
+                csv += `${equipment}\n`;
+            });
+
+            return csv;
+        }
+
+        function downloadCSV(csvContent, filename) {
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showToast(`Exported ${filename} successfully!`);
+        }
+
+        // LocalStorage functionality
+        function saveToLocalStorage() {
+            try {
+                const dataToSave = {
+                    version: '1.0',
+                    savedAt: new Date().toISOString(),
+                    appData: appData,
+                    compareData: compareData,
+                    currentView: currentView,
+                    comparisonActive: comparisonActive,
+                    useDisplayNames: useDisplayNames,
+                    definitionName: document.getElementById('definitionName')?.value || '',
+                    checkedItems: [...checkedItems], // Save checkbox state
+                    excludedItems: [...excludedItems], // Save excluded items state
+                    uiState: {
+                        currentView: currentView,
+                        comparisonActive: comparisonActive,
+                        useDisplayNames: useDisplayNames
+                    }
+                };
+
+                localStorage.setItem('metasysExplorerData', JSON.stringify(dataToSave));
+                console.log('Data saved to localStorage');
+            } catch (error) {
+                console.error('Error saving to localStorage:', error);
+            }
+        }
+
+        function loadFromLocalStorage() {
+            try {
+                const savedData = localStorage.getItem('metasysExplorerData');
+                if (!savedData) {
+                    return false;
+                }
+
+                const data = JSON.parse(savedData);
+
+                // Restore data
+                if (data.appData) {
+                    appData = data.appData;
+                }
+                if (data.compareData) {
+                    compareData = data.compareData;
+                }
+
+                currentView = data.currentView || 'tree';
+                comparisonActive = data.comparisonActive || false;
+                useDisplayNames = data.useDisplayNames || false;
+
+                // Restore checkbox state
+                if (data.checkedItems) {
+                    checkedItems = new Set(data.checkedItems);
+                    updateCheckboxDisplay();
+                    updateCheckedCounter();
+                }
+
+                // Restore excluded items state
+                if (data.excludedItems) {
+                    excludedItems = new Set(data.excludedItems);
+                }
+
+                // Restore form values
+                if (data.definitionName) {
+                    const definitionNameInput = document.getElementById('definitionName');
+                    if (definitionNameInput) {
+                        definitionNameInput.value = data.definitionName;
+                    }
+                }
+
+                console.log('Data loaded from localStorage');
+
+                // Show restoration notice
+                const savedAt = new Date(data.savedAt).toLocaleString();
+                showToast(`Previous session restored (saved ${savedAt})`, 'info', 5000);
+
+                return true;
+            } catch (error) {
+                console.error('Error loading from localStorage:', error);
+                return false;
+            }
+        }
+
+        function clearAllData() {
+            if (!confirm('Are you sure you want to clear all data? This will remove all imported files, templates, and settings. This action cannot be undone.')) {
+                return;
+            }
+
+            try {
+                // Clear localStorage
+                localStorage.removeItem('metasysExplorerData');
+
+                // Reset application state
+                appData = null;
+                compareData = null;
+                currentView = 'tree';
+                comparisonActive = false;
+                useDisplayNames = false;
+
+                // Clear checkbox state
+                checkedItems.clear();
+                updateCheckboxDisplay();
+                updateCheckedCounter();
+
+                // Clear excluded items state
+                excludedItems.clear();
+
+                // Clear form inputs
+                const definitionNameInput = document.getElementById('definitionName');
+                if (definitionNameInput) {
+                    definitionNameInput.value = '';
+                }
+
+                // Clear file inputs
+                const fileInput = document.getElementById('fileInput');
+                const compareFileInput = document.getElementById('compareFileInput');
+                if (fileInput) fileInput.value = '';
+                if (compareFileInput) compareFileInput.value = '';
+
+                // Clear all view content
+                const treeView = document.getElementById('treeView');
+                const templatesView = document.getElementById('templatesView');
+                const detailPanel = document.getElementById('detailPanel');
+                if (treeView) treeView.innerHTML = '';
+                if (templatesView) templatesView.innerHTML = '';
+                if (detailPanel) detailPanel.classList.remove('show');
+
+                // Update UI
+                updateDisplay();
+                updateExportButtons();
+
+                // Hide comparison elements
+                document.getElementById('compareBogBtn').style.display = 'none';
+                document.getElementById('clearComparisonBtn').style.display = 'none';
+                document.getElementById('comparisonBtn').style.display = 'none';
+                document.getElementById('compareFileInfo').style.display = 'none';
+
+                // Clear file names and reset to initial state
+                document.getElementById('fileName').textContent = 'None';
+                document.getElementById('compareFileName').textContent = '';
+
+                showToast('All data cleared successfully', 'success');
+                console.log('All data cleared');
+            } catch (error) {
+                console.error('Error clearing data:', error);
+                showToast('Error clearing data', 'error');
+            }
+        }
+
+        // Initialize application
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Metasys Mapper - CSV Point Explorer initialized');
+
+            // Try to load saved data
+            const dataLoaded = loadFromLocalStorage();
+
+            if (dataLoaded && appData) {
+                // Update UI to reflect loaded data
+                updateDisplay();
+                updateExportButtons();
+
+                // Update display names toggle if needed
+                if (useDisplayNames) {
+                    const btn = document.getElementById('displayNamesBtn');
+                    if (btn) {
+                        btn.textContent = 'Using Display Names';
+                        btn.classList.add('active');
+                    }
+                }
+
+                // Show file info if data exists
+                if (appData) {
+                    document.getElementById('fileName').textContent = 'Restored from localStorage';
+                    document.getElementById('compareBogBtn').style.display = 'inline-flex';
+                }
+
+                if (compareData) {
+                    document.getElementById('compareFileName').textContent = 'Restored from localStorage';
+                    document.getElementById('compareFileInfo').style.display = 'block';
+                    document.getElementById('clearComparisonBtn').style.display = 'inline-flex';
+                    document.getElementById('comparisonBtn').style.display = 'inline-flex';
+                }
+            }
+        });
+
+        console.log('Metasys Mapper - CSV Point Explorer');
+    </script>
+</body>
+</html>
